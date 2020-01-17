@@ -1,0 +1,11 @@
+{
+    "name": "norsebot",
+    "version": "0.0.1",
+    "description": "Norse Bot Demo",
+    "main": "bot.js",
+    "author": "Epic Team Name",
+    "dependencies": {
+        "discord.io": "https://github.com/woor/discord.io/tarball/gateway_v6",
+        "winston": "^3.2.1"
+    }
+}
