@@ -1,4 +1,8 @@
-# Project Setup
+# NorseBot
+
+Basic Discord bot as an example to proof the testability of discord bots for use in Software Testing and Maintenance.
+
+## Setup
 
 1. Install NodeJS
 2. Navigate to the project root directory
