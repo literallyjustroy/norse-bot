@@ -14,7 +14,6 @@ module.exports = {
       const num2 = Number(args[1]);
       logger.debug(`1: [${num1}], 2: [${num2}]`);
 
-      // eslint-disable-next-line no-restricted-globals
       if (isNaN(num1) || isNaN(num2)) { // if either is not NotANumber
         message = 'Arguments must be numbers'; // Should really throw an error which is caught in bots.js
       } else {
@@ -24,7 +23,7 @@ module.exports = {
     return message;
   },
 
-  isNKUStudent(firstName, lastName) {
-    // Check directory.nku.edu/student and check if the last/name combo returns any students
-  },
+//   isNKUStudent(firstName, lastName) {
+//     // Check directory.nku.edu/student and check if the last/name combo returns any students
+//   },
 };
