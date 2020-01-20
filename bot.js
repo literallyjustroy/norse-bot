@@ -32,8 +32,11 @@ bot.on('message', (message) => {
             case 'ping':
                 message.channel.send('Pong!');
             break;
+            case 'smile':
+                message.react('😄');
+            break;
             case 'add':
-                message.channel.send(botFunctions.add(args, logger));
+                message.channel.send(botFunctions.add(args));
             break;
             default:
         }
