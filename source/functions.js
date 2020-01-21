@@ -23,20 +23,25 @@ module.exports = {
         let response = `Must provide at least 1 search term (Ex: !get nku esports)`;
         if (args.length > 0) {
             response = `Error getting requested image`;
-            const keyword = encodeURI(args[0]);
-            let numPhotos = '100';
+            const keyword = encodeURI(args.join(' ')); // combines arguments for multi-worded search
+            let numPhotos = 100;  
             let options = {
-                uri: `https://www.flickr.com/services/rest/?method=flickr.photos.search&api_key=3d48b0312aeb1b7e0f97bf7543c558b6&tags=${keyword}&sort=relevance&per_page=100&format=json&nojsoncallback=1`,
+                uri: `https://www.flickr.com/services/rest/?method=flickr.photos.search&api_key=0c748ca30b04100a36deb13f12b3c1d3&tags=${keyword}&sort=relevance&per_page=100&format=json&nojsoncallback=1`,
                 json: true
             }
             logger.debug(options);
             await request(options).then(json => {
-                numPhotos = json.photos.perpage; // reset incase less photos are available
-                const photoIndex = Math.floor(Math.random() * Math.floor(numPhotos)); // Random int less than num photos
-                
-                const photo = json.photos.photo[photoIndex];
-                response = `http://farm${photo.farm}.staticflickr.com/${photo.server}/${photo.id}_${photo.secret}.jpg`;
-                logger.debug(response);
+                if (json.photos.photo.length === 0)
+                    response = 'Search returned no results';
+                else {
+                    numPhotos = json.photos.perpage; // reset incase less photos are available
+
+                    const photoIndex = Math.floor(Math.random() * Math.floor(numPhotos)); // Random int less than num photos
+                    
+                    const photo = json.photos.photo[photoIndex];
+                    response = `http://farm${photo.farm}.staticflickr.com/${photo.server}/${photo.id}_${photo.secret}.jpg`;
+                    logger.debug(response);
+                }
             }).catch( err => {
                 logger.debug(err);
             });
