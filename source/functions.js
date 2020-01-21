@@ -20,25 +20,27 @@ module.exports = {
     },
 
     async randomImage(args) {
-        let response = `Only exactly 1 argument allowed for image searches (Ex: !get nku esports)`;
-        const keyword = encodeURI(args[0]);
-        response = `Error getting image of ${keyword}`;
-        let numPhotos = '100';
-        let options = {
-            uri: `https://www.flickr.com/services/rest/?method=flickr.photos.search&api_key=3d48b0312aeb1b7e0f97bf7543c558b6&tags=${keyword}&sort=relevance&per_page=100&format=json&nojsoncallback=1`,
-            json: true
+        let response = `Must provide at least 1 search term (Ex: !get nku esports)`;
+        if (args.length > 0) {
+            response = `Error getting requested image`;
+            const keyword = encodeURI(args[0]);
+            let numPhotos = '100';
+            let options = {
+                uri: `https://www.flickr.com/services/rest/?method=flickr.photos.search&api_key=3d48b0312aeb1b7e0f97bf7543c558b6&tags=${keyword}&sort=relevance&per_page=100&format=json&nojsoncallback=1`,
+                json: true
+            }
+            logger.debug(options);
+            await request(options).then(json => {
+                numPhotos = json.photos.perpage; // reset incase less photos are available
+                const photoIndex = Math.floor(Math.random() * Math.floor(numPhotos)); // Random int less than num photos
+                
+                const photo = json.photos.photo[photoIndex];
+                response = `http://farm${photo.farm}.staticflickr.com/${photo.server}/${photo.id}_${photo.secret}.jpg`;
+                logger.debug(response);
+            }).catch( err => {
+                logger.debug(err);
+            });
         }
-        logger.debug(options);
-        await request(options).then(json => {
-            numPhotos = json.photos.perpage; // reset incase less photos are available
-            const photoIndex = Math.floor(Math.random() * Math.floor(numPhotos)); // Random int less than num photos
-            
-            const photo = json.photos.photo[photoIndex];
-            response = `http://farm${photo.farm}.staticflickr.com/${photo.server}/${photo.id}_${photo.secret}.jpg`;
-            logger.debug(response);
-        }).catch( err => {
-            logger.debug(err);
-        });
         return response;
     }
 
