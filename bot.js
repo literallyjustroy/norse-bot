@@ -17,7 +17,7 @@ bot.on('ready', () => {
     logger.info('Bot Connected');
 });
 
-bot.on('message', (message) => {
+bot.on('message', async message => {
     // It will listen for messages that will start with `!`
     if (message.content.substring(0, 1) === '!' && !message.author.bot) { // won't respond to other bots
         let args = message.content.substring(1).split(' ');
@@ -28,17 +28,22 @@ bot.on('message', (message) => {
         logger.debug(`args: [${args}]`);
 
         switch (cmd) {
-            // !ping
             case 'ping':
                 message.channel.send('Pong!');
             break;
             case 'smile':
                 message.react('😄');
             break;
+            case 'get': { // provides an image of the requested topic
+                let result = await botFunctions.randomImage(args)
+                message.channel.send(result)
+                break;
+            }
             case 'add':
                 message.channel.send(botFunctions.add(args));
             break;
             default:
+                // check if channelID is userID, if so: tell the bot to use !help or something
         }
     }
 });

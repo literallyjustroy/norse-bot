@@ -6,6 +6,8 @@
   "dependencies": {
     "discord.js": "^11.5.1",
     "mocha": "^7.0.0",
+    "request": "^2.88.0",
+    "request-promise-native": "^1.0.8",
     "winston": "^3.2.1"
   },
   "devDependencies": {
