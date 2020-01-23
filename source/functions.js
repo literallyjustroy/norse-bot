@@ -34,7 +34,7 @@ module.exports = {
                 if (json.photos.photo.length === 0)
                     response = 'Search returned no results';
                 else {
-                    numPhotos = json.photos.perpage; // reset incase less photos are available
+                    numPhotos = json.photos.photo.length; // reset incase less photos are available
 
                     const photoIndex = Math.floor(Math.random() * Math.floor(numPhotos)); // Random int less than num photos
                     
