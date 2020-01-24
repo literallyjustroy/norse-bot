@@ -7,7 +7,7 @@ Basic Discord bot as an example to proof the testability of discord bots for use
 1. Install NodeJS
 2. Navigate to the project root directory
 3. Install dependencies: `npm install discord.js winston request request-promise-native`
-4. Add a auth.json file in the root directory and paste in the token (pinned in the #project channel)
+4. Create a auth.json file in the root directory and paste in the token (Pinned in the Discord #project channel)
 5. Run `node bot.js`
 
 ## Testing
