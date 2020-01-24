@@ -3,6 +3,7 @@ const request = require('request-promise-native');
 // Configure logger settings
 
 module.exports = {
+    /** Adds two numbers together from given arguments */
     add(args) {
         let response = 'Must add 2 numbers (Ex: "!add 1 2)"';
             if (args.length === 2) {
