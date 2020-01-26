@@ -1,6 +1,6 @@
 # NorseBot
 
-Basic Discord bot as an example to proof the testability of discord bots for use in Software Testing and Maintenance.
+A basic Discord bot use in Software Testing and Maintenance.
 
 ## Setup
 
