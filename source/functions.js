@@ -31,7 +31,7 @@ module.exports = {
                 json: true
             };
             logger.debug(options);
-            request(options).then(json => {
+            await request(options).then(json => {
                 if (json.photos.photo.length === 0)
                     response = 'Search returned no results';
                 else {

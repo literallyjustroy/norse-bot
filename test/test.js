@@ -29,7 +29,7 @@ describe('botFunctions', function() {
             assert.equal(message, 'Must provide at least 1 search term (Ex: !get nku esports)');
         });
 
-        it('Should return error message for unsearchable keyword', async function() {
+        it('Should return error message for no results', async function() {
             const args = ['zwmdmzfiioetjamfam123192390djasjikda', 'zc9i9i238u8udjdsaf8988'];
             const message = await botFunctions.randomImage(args);
             assert.equal(message, 'Search returned no results');
