@@ -348,9 +348,4 @@ MigrationBackup/
 
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
-
-# Jetbrains IDEs
-.idea/
-
-# Auth Tokens:
 auth.json
