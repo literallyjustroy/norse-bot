@@ -9,7 +9,7 @@ Basic Discord bot as an example to proof the testability of discord bots for use
 3. Navigate to the project root directory
 4. Install dependencies: `npm install` using cmd prompt/terminal
 5. Create an auth.json file in the root directory and paste in the token (Pinned in the Discord #project channel)
-6. Run `node bot.js` in cmd prompt/terminal
+6. Run `npm start` in cmd prompt/terminal
 
 ## Testing
 
