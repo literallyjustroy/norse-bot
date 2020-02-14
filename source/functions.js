@@ -3,6 +3,7 @@ const request = require('request-promise-native');
 // Configure logger settings
 
 module.exports = {
+    /** Adds two numbers together from given arguments */
     add(args) {
         let response = 'Must add 2 numbers (Ex: "!add 1 2)"';
             if (args.length === 2) {
@@ -28,7 +29,7 @@ module.exports = {
             let options = {
                 uri: `https://www.flickr.com/services/rest/?method=flickr.photos.search&api_key=0c748ca30b04100a36deb13f12b3c1d3&tags=${keyword}&sort=relevance&per_page=100&format=json&nojsoncallback=1`,
                 json: true
-            }
+            };
             logger.debug(options);
             await request(options).then(json => {
                 if (json.photos.photo.length === 0)

@@ -29,18 +29,18 @@ bot.on('message', async message => {
 
         switch (cmd) {
             case 'ping':
-                message.channel.send('Pong!');
+                await message.channel.send('Pong!');
                 break;
             case 'smile':
-                message.react('😄');
+                await message.react('😄');
                 break;
             case 'get': { // provides an image of the requested topic
                 let result = await botFunctions.randomImage(args);
-                message.channel.send(result);
+                await message.channel.send(result);
                 break;
             }
             case 'add':
-                message.channel.send(botFunctions.add(args));
+                await message.channel.send(botFunctions.add(args));
                 break;
             default:
                 // TODO: check if channelID is userID, if so: tell the bot to use !help or something
