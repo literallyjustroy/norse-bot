@@ -13,6 +13,12 @@ logger.level = 'debug';
 // Initialize Discord Bot
 const bot = new Discord.Client();
 
+// YouTube audio dependency
+const ytdl = require('ytdl-core');
+
+// Queue for YouTube music implemented via Map Data Structure
+const queue = new Map();
+
 bot.on('ready', () => {
     logger.info('Bot Connected');
 });
@@ -22,6 +28,8 @@ bot.on('message', async message => {
     if (message.content.substring(0, 1) === '!' && !message.author.bot) { // won't respond to other bots
         let args = message.content.substring(1).split(' ');
         const cmd = args[0];
+
+        const serverQueue = queue.get(message.guild.id);    // For the YouTube audio
 
         args = args.splice(1);
         logger.debug(`cmd: '${cmd}'`);
@@ -42,6 +50,19 @@ bot.on('message', async message => {
             case 'add':
                 await message.channel.send(botFunctions.add(args));
                 break;
+
+            case 'play':
+                execute(message, serverQueue);
+                return;
+
+            case 'skip':
+                skip(message, serverQueue);
+                return;
+
+            case 'stop':
+                stop(message, serverQueue);
+                return;
+
             default:
                 // TODO: check if channelID is userID, if so: tell the bot to use !help or something
         }
