@@ -2,6 +2,7 @@ const Discord = require('discord.js');
 const logger = require('winston');
 const auth = require('./auth.json');
 const botFunctions = require('./source/functions');
+const ytFunctions = require('./source/ytplayer.js');
 
 // Configure logger settings
 logger.remove(logger.transports.Console);
@@ -13,15 +14,11 @@ logger.level = 'debug';
 // Initialize Discord Bot
 const bot = new Discord.Client();
 
-// YouTube audio dependency
-const ytdl = require('ytdl-core');
-
-// Queue for YouTube music implemented via Map Data Structure
-const queue = new Map();
-
 bot.on('ready', () => {
     logger.info('Bot Connected');
 });
+
+const queue = new Map();  
 
 bot.on('message', async message => {
     // It will listen for messages that will start with `!`
@@ -29,8 +26,8 @@ bot.on('message', async message => {
         let args = message.content.substring(1).split(' ');
         const cmd = args[0];
 
-        const serverQueue = queue.get(message.guild.id);    // For the YouTube audio
-
+        const serverQueue = queue.get(message.guild.id);    // For the YouTube audio   
+                                 
         args = args.splice(1);
         logger.debug(`cmd: '${cmd}'`);
         logger.debug(`args: [${args}]`);
@@ -52,7 +49,7 @@ bot.on('message', async message => {
                 break;
 
             case 'play':
-                await botFunctions.execute(args, serverQueue);
+                await message.channel.send(ytFunctions.execute(args[0], queue, serverQueue));
                 return;
 
             case 'skip':
