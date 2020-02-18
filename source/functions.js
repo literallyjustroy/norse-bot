@@ -50,11 +50,24 @@ module.exports = {
         return response;
     },
 
+    // =====================================================================================================================================================
+
     // Primary functionality for making Youtube music play
     async execute(message, serverQueue) {
-        const args = message.content.split(' ');
 
-        const voiceChannel = message.member.voiceChannel;
+        console.log("Execute called");
+
+        const voiceChannel = message.member.voiceChannel;       // ERROR HERE
+
+        /*
+        try {
+            console.log(message.member.voiceChannel);
+        }
+        catch {
+            console.log("TypeError: Cannot read property of voiceChannel");
+        }
+        */
+
         const permissions = voiceChannel.permissionsFor(message.client.user);
 
         // Checking to make sure that the user is in a voice channel

@@ -52,15 +52,15 @@ bot.on('message', async message => {
                 break;
 
             case 'play':
-                execute(message, serverQueue);
+                await botFunctions.execute(args, serverQueue);
                 return;
 
             case 'skip':
-                skip(message, serverQueue);
+                //skip(message, serverQueue);
                 return;
 
             case 'stop':
-                stop(message, serverQueue);
+                //stop(message, serverQueue);
                 return;
 
             default:
