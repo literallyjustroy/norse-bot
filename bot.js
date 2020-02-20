@@ -18,19 +18,26 @@ bot.on('ready', () => {
     logger.info('Bot Connected');
 });
 
+// Queue for YouTube songs
 const queue = new Map();  
+
+const prefix = "!";
 
 bot.on('message', async message => {
     // It will listen for messages that will start with `!`
-    if (message.content.substring(0, 1) === '!' && !message.author.bot) { // won't respond to other bots
+    if (message.content.substring(0, 1) === '!' && !message.author.bot) {   // won't respond to other bots
         let args = message.content.substring(1).split(' ');
         const cmd = args[0];
 
-        const serverQueue = queue.get(message.guild.id);    // For the YouTube audio   
+        const serverQueue = queue.get(message.guild.id);    // For the YouTube audio functionality
                                  
         args = args.splice(1);
         logger.debug(`cmd: '${cmd}'`);
         logger.debug(`args: [${args}]`);
+
+        if (message.content.startsWith(`${prefix}play`)) {
+            await message.channel.send(ytFunctions.execute(message, queue, serverQueue));
+        } 
 
         switch (cmd) {
             case 'ping':

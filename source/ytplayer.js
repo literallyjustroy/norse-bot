@@ -1,13 +1,17 @@
 module.exports = {
         // Primary functionality for making Youtube music play
         async execute(message, queue, serverQueue) {
+
+            const args = message.content.split(' ');
+            const url = args[0];
     
             // YouTube audio dependency
             const ytdl = require('ytdl-core');
             
             console.log("Execute called");
-    
-            const voiceChannel = message.member.voiceChannel;       // ERROR HERE
+            //console.log(message);
+            
+            const voiceChannel = message.member.voiceChannel; 
             
             const permissions = voiceChannel.permissionsFor(message.client.user);
     
@@ -22,10 +26,10 @@ module.exports = {
             }
     
             // Obtaining the song's info and making a song object
-            const songInfo = await ytdl.getInfo(message);
+            const songInfo = await ytdl.getInfo(url);
             const song = {
                 title: songInfo.title,
-                url: songInfo.video_url,
+                message: songInfo.video_url,
                 length: songInfo.lengthSeconds,	// undefined? ended after 2m 38s
             };
     
@@ -85,7 +89,7 @@ module.exports = {
                 return;
             }
     
-            const dispatcher = serverQueue.connection.playStream(this.ytdl(song.url))
+            const dispatcher = serverQueue.connection.playStream(this.ytdl(song.message))
                 .on('end', () => {
                     console.log('Music ended!');
                     serverQueue.songs.shift();
