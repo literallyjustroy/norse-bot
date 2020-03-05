@@ -34,7 +34,7 @@ bot.on('message', async message => {
             case 'smile':
                 await message.react('😄');
                 break;
-            case 'get': { // provides an image of the requested topic
+            case 'get': {
                 let result = await botFunctions.randomImage(args);
                 await message.channel.send(result);
                 break;
