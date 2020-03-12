@@ -24,12 +24,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/roykanesmith/norse-bot.git"
+    "url": "git+https://github.com/royOST/norse-bot.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/roykanesmith/norse-bot/issues"
+    "url": "https://github.com/royOST/norse-bot/issues"
   },
-  "homepage": "https://github.com/roykanesmith/norse-bot#readme"
+  "homepage": "https://github.com/royOST/norse-bot#readme"
 }

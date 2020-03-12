@@ -44,7 +44,7 @@ module.exports = {
                     logger.debug(response);
                 }
             }).catch( err => {
-                logger.debug(err);
+                logger.debug(err); // Should throw error so bot.js handles and returns message.
             });
         }
         return response;
