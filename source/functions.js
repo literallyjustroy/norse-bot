@@ -50,7 +50,3 @@ module.exports = {
         return response;
     }
 
-//   isNKUStudent(firstName, lastName) {
-//     // Check directory.nku.edu/student and check if the last/name combo returns any students
-//   },
-};
