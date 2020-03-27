@@ -354,3 +354,5 @@ MigrationBackup/
 
 # Auth Tokens:
 auth.json
+
+.nyc_output/
