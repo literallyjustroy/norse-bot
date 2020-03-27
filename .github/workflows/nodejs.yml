@@ -20,6 +20,6 @@ jobs:
       with:
         node-version: 12
     - run: npm ci
-    - run: npm nyc test
+    - run: npm test
       env:
         CI: true
