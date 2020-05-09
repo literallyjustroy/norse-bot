@@ -24,7 +24,7 @@
   "scripts": {
     "tsc": "tsc",
     "start": "node bot.ts",
-    "test": "nyc mocha"
+    "test": "tsc && nyc mocha"
   },
   "repository": {
     "type": "git",
