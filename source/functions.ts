@@ -3,7 +3,15 @@ const request = require('request-promise-native');
 // Configure logger settings
 
 module.exports = {
-    /** Adds two numbers together from given arguments */
+    ping() {
+
+    },
+
+    /**
+     * Adds two numbers together
+     * @param args
+     * @returns {string}
+     */
     add(args) {
         let response = 'Must add 2 numbers (Ex: "!add 1 2)"';
             if (args.length === 2) {
@@ -20,6 +28,11 @@ module.exports = {
         return response;
     },
 
+    /**
+     *
+     * @param args
+     * @returns {Promise<string>}
+     */
     async randomImage(args) {
         let response = `Must provide at least 1 search term (Ex: !get nku esports)`;
         if (args.length > 0) {
