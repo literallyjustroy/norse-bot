@@ -1,7 +1,6 @@
 import { Client, Message }  from 'discord.js';
 import { add, ping, randomImage } from './source/functions';
 import { logger }  from './source/log';
-const auth = require('./auth.json');
 
 // Initialize Discord Bot
 const bot = new Client();
@@ -41,4 +40,4 @@ bot.on('message', async (message: Message) => {
     }
 });
 
-bot.login(auth.token).then(r => logger.info(`Bot Authenticated: ${r}`));
+bot.login(process.env.BOT_TOKEN).then(r => logger.info(`Bot Authenticated: ${r}`));

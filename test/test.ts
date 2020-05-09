@@ -1,5 +1,5 @@
-import assert from 'assert';
-import { add, randomImage, ping} from '../source/functions';
+const assert = require('assert');
+import { add, randomImage, ping } from '../source/functions';
 
 describe('botFunctions', function() {
     describe('#add()', function() {
@@ -18,7 +18,7 @@ describe('botFunctions', function() {
         it('Should return the correct addition of two string numbers', function() {
             const args = ['3', '4'];
             const message = add(args);
-            assert.strictEqual(message, 7);
+            assert.strictEqual(message, '7');
         });
     });
 

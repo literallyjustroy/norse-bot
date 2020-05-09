@@ -35,7 +35,7 @@ export function add(args: string[]) {
  * @returns {Promise<string>}
  */
 export async function randomImage(args: string[]) {
-    let response = `Must provide at least 1 search term (Ex: !get nku esports)`;
+    let response = `Must provide at least 1 search term (Ex: !get nku e-Sports)`;
     if (args.length > 0) {
         response = `Error getting requested image`;
         const keyword = encodeURI(args.join(' ')); // combines arguments for multi-worded search
