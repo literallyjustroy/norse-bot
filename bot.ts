@@ -29,7 +29,7 @@ bot.on('message', async message => {
 
         switch (cmd) {
             case 'ping':
-                await message.channel.send('Pong!');
+                await message.channel.send(await botFunctions.ping());
                 break;
             case 'smile':
                 await message.react('😄');
