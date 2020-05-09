@@ -2,14 +2,12 @@
   "name": "norse-bot",
   "version": "1.0.0",
   "description": "Discord bot created for class project",
-  "main": "bot.ts",
+  "main": "bot.js",
   "dependencies": {
-    "@types/node": "^13.13.5",
     "discord.js": "^11.5.1",
     "nyc": "^15.0.0",
     "request": "^2.88.0",
     "request-promise-native": "^1.0.8",
-    "typescript": "^3.8.3",
     "winston": "^3.2.1"
   },
   "devDependencies": {
@@ -22,8 +20,7 @@
     "mocha": "^7.0.0"
   },
   "scripts": {
-    "tsc": "tsc",
-    "start": "node bot.ts",
+    "start": "node bot.js",
     "test": "nyc mocha"
   },
   "repository": {
