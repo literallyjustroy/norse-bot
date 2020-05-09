@@ -1,10 +1,10 @@
 {
   "name": "norse-bot",
-  "version": "1.0.0",
-  "description": "Discord bot created for class project",
+  "version": "0.0.3",
+  "description": "Discord bot created for NKU Esports",
   "main": "bot.ts",
+  "type": "module",
   "dependencies": {
-    "@types/node": "^13.13.5",
     "discord.js": "^11.5.1",
     "nyc": "^15.0.0",
     "request": "^2.88.0",
@@ -15,6 +15,8 @@
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^2.17.0",
     "@typescript-eslint/parser": "^2.17.0",
+    "@types/mocha": "^7.0.2",
+    "@types/node": "^13.13.5",
     "eslint": "^6.8.0",
     "eslint-config-airbnb-base": "^14.0.0",
     "eslint-config-google": "^0.14.0",
@@ -23,17 +25,17 @@
   },
   "scripts": {
     "tsc": "tsc",
-    "start": "node bot.ts",
-    "test": "tsc && nyc mocha"
+    "start": "tsc && node bot.ts",
+    "test": "tsc && nyc mocha ./build/test/test.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/roykanesmith/norse-bot.git"
+    "url": "git+https://github.com/royOST/norse-bot.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/roykanesmith/norse-bot/issues"
+    "url": "https://github.com/royOST/norse-bot/issues"
   },
-  "homepage": "https://github.com/roykanesmith/norse-bot#readme"
+  "homepage": "https://github.com/royOST/norse-bot#readme"
 }
