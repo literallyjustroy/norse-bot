@@ -4,15 +4,17 @@
         "es6": true,
         "mocha": true
     },
-    "extends": "eslint:recommended",
-    "globals": {
-        "Atomics": "readonly",
-        "SharedArrayBuffer": "readonly"
+    "root": true,
+    "parser": "@typescript-eslint/parser",
+    "parserOptions":{
+        "ecmaVersion": 2020,
+        "sourceType": "module"
     },
-    "parserOptions": {
-        "ecmaVersion": 2019
-    },
+    "extends": [
+        "plugin:@typescript-eslint/recommended"
+    ],
     "rules": {
-        "no-unused-vars": "warn"
+        "object-curly-spacing": ["warn", "always"],
+        "semi": ["warn", "always"]
     }
 }

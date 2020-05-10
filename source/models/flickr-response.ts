@@ -5,8 +5,8 @@ export interface FlickrResponse {
 }
 
 interface FlickrPhoto {
-    farm: string,
-    server: string,
-    id: string,
-    secret: string,
+    farm: string;
+    server: string;
+    id: string;
+    secret: string;
 }

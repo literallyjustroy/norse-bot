@@ -26,11 +26,10 @@ bot.on('message', async (message: Message) => {
             case 'smile':
                 await message.react('😄');
                 break;
-            case 'get': { // provides an image of the requested topic
-                let result = await randomImage(args);
+            case 'get':
+                const result = await randomImage(args);
                 await message.channel.send(result);
                 break;
-            }
             case 'add':
                 await message.channel.send(add(args));
                 break;
@@ -40,4 +39,5 @@ bot.on('message', async (message: Message) => {
     }
 });
 
-bot.login(process.env.BOT_TOKEN).then(r => logger.info(`Bot Authenticated: ${r}`));
+bot.login(process.env.BOT_TOKEN)
+    .then(() => logger.info(`Login Success`));

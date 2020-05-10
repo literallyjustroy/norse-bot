@@ -1,31 +1,29 @@
 {
   "name": "norse-bot",
-  "version": "0.0.3",
+  "version": "1.0.0",
   "description": "Discord bot created for NKU Esports",
   "main": "bot.ts",
   "dependencies": {
     "discord.js": "^11.5.1",
+    "node-fetch": "^2.6.0",
     "nyc": "^15.0.0",
-    "request": "^2.88.0",
-    "request-promise-native": "^1.0.8",
     "typescript": "^3.8.3",
     "winston": "^3.2.1"
   },
   "devDependencies": {
+    "@types/node-fetch": "^2.5.7",
     "@types/mocha": "^7.0.2",
     "@types/node": "^13.13.5",
-    "@typescript-eslint/eslint-plugin": "^2.17.0",
-    "@typescript-eslint/parser": "^2.17.0",
+    "@typescript-eslint/eslint-plugin": "^2.31.0",
+    "@typescript-eslint/parser": "^2.31.0",
     "eslint": "^6.8.0",
-    "eslint-config-airbnb-base": "^14.0.0",
-    "eslint-config-google": "^0.14.0",
-    "eslint-plugin-import": "^2.20.0",
     "mocha": "^7.0.0"
   },
   "scripts": {
     "tsc": "tsc",
-    "start": "tsc && npm test && node ./build/bot.js",
-    "test": "nyc mocha ./build/test/test.js"
+    "start": "tsc && node ./build/bot.js",
+    "dev": "node bot.ts --require ts-node/register",
+    "test": "tsc && nyc mocha ./build/test/"
   },
   "repository": {
     "type": "git",

@@ -1,11 +1,9 @@
-import {FlickrResponse} from "./models/flickr-response";
-
-const request = require('request-promise-native');
+import { FlickrResponse } from "./models/flickr-response";
 import { logger }  from './log';
-// Configure logger settings
+import fetch from "node-fetch";
 
-export function ping() {
-
+export function ping(): string {
+    return 'pong';
 }
 
 /**
@@ -13,7 +11,7 @@ export function ping() {
  * @param args
  * @returns {string}
  */
-export function add(args: string[]) {
+export function add(args: string[]): string {
     let response = 'Must add 2 numbers (Ex: "!add 1 2)"';
         if (args.length === 2) {
         const num1 = Number(args[0]);
@@ -34,32 +32,32 @@ export function add(args: string[]) {
  * @param args
  * @returns {Promise<string>}
  */
-export async function randomImage(args: string[]) {
+export async function randomImage(args: string[]): Promise<string> {
     let response = `Must provide at least 1 search term (Ex: !get nku e-Sports)`;
     if (args.length > 0) {
         response = `Error getting requested image`;
         const keyword = encodeURI(args.join(' ')); // combines arguments for multi-worded search
         let numPhotos = 100;
-        let options = {
-            uri: `https://www.flickr.com/services/rest/?method=flickr.photos.search&api_key=0c748ca30b04100a36deb13f12b3c1d3&tags=${keyword}&sort=relevance&per_page=100&format=json&nojsoncallback=1`,
-            json: true
-        };
-        logger.debug(options);
-        await request(options).then((json: FlickrResponse) => {
-            if (json.photos.photo.length === 0)
+        const url = `https://www.flickr.com/services/rest/?method=flickr.photos.search&api_key=0c748ca30b04100a36deb13f12b3c1d3&tags=${keyword}&sort=relevance&per_page=100&format=json&nojsoncallback=1`;
+        logger.debug(url);
+        try {
+            const apiResponse = await fetch(url);
+            const flickrResponse = await apiResponse.json() as FlickrResponse;
+
+            if (flickrResponse.photos.photo.length === 0)
                 response = 'Search returned no results';
             else {
-                numPhotos = json.photos.photo.length; // reset incase less photos are available
+                numPhotos = flickrResponse.photos.photo.length; // reset incase less photos are available
 
                 const photoIndex = Math.floor(Math.random() * Math.floor(numPhotos)); // Random int less than num photos
 
-                const photo = json.photos.photo[photoIndex];
+                const photo = flickrResponse.photos.photo[photoIndex];
                 response = `http://farm${photo.farm}.staticflickr.com/${photo.server}/${photo.id}_${photo.secret}.jpg`;
                 logger.debug(response);
             }
-        }).catch((err: Error) => {
-            logger.debug(err);
-        });
+        } catch (error) {
+            logger.error(error);
+        }
     }
     return response;
 }

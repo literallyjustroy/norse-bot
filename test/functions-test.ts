@@ -1,4 +1,4 @@
-const assert = require('assert');
+import assert from "assert";
 import { add, randomImage, ping } from '../source/functions';
 
 describe('botFunctions', function() {
@@ -26,7 +26,7 @@ describe('botFunctions', function() {
         it('Should return error message for wrong number of arguments', async function() {
             const args: string[] = [];
             const message = await randomImage(args);
-            assert.strictEqual(message, 'Must provide at least 1 search term (Ex: !get nku esports)');
+            assert.strictEqual(message, 'Must provide at least 1 search term (Ex: !get nku e-Sports)');
         });
 
         it('Should return error message for no results', async function() {
