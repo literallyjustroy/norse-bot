@@ -1,23 +1,15 @@
-const Discord = require('discord.js');
-const logger = require('winston');
-const auth = require('./auth.json');
-const botFunctions = require('./source/functions');
-
-// Configure logger settings
-logger.remove(logger.transports.Console);
-logger.add(new logger.transports.Console(), {
-    colorize: true,
-});
-logger.level = 'debug';
+import { Client, Message }  from 'discord.js';
+import { add, ping, randomImage } from './source/functions';
+import { logger }  from './source/log';
 
 // Initialize Discord Bot
-const bot = new Discord.Client();
+const bot = new Client();
 
 bot.on('ready', () => {
     logger.info('Bot Connected');
 });
 
-bot.on('message', async message => {
+bot.on('message', async (message: Message) => {
     // It will listen for messages that will start with `!`
     if (message.content.substring(0, 1) === '!' && !message.author.bot) { // won't respond to other bots
         let args = message.content.substring(1).split(' ');
@@ -29,18 +21,17 @@ bot.on('message', async message => {
 
         switch (cmd) {
             case 'ping':
-                await message.channel.send('Pong!');
+                await message.channel.send(ping());
                 break;
             case 'smile':
                 await message.react('😄');
                 break;
-            case 'get': { // provides an image of the requested topic
-                let result = await botFunctions.randomImage(args);
+            case 'get':
+                const result = await randomImage(args);
                 await message.channel.send(result);
                 break;
-            }
             case 'add':
-                await message.channel.send(botFunctions.add(args));
+                await message.channel.send(add(args));
                 break;
             default:
                 // TODO: check if channelID is userID, if so: tell the bot to use !help or something
@@ -48,4 +39,5 @@ bot.on('message', async message => {
     }
 });
 
-bot.login(auth.token);
+bot.login(process.env.BOT_TOKEN)
+    .then(() => logger.info(`Login Success`));
