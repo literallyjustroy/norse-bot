@@ -1,7 +1,6 @@
 import { LoggerOptions } from "winston";
 import winston from "winston";
 
-// define the custom settings for each transport (file, console)
 const options = {
     console: {
         level: 'debug',
@@ -11,12 +10,11 @@ const options = {
     },
 };
 
-// instantiate a new Winston Logger with the settings defined above
 export const logger = winston.createLogger({
     level: 'info',
     format: winston.format.json(),
-    defaultMeta: { service: 'user-service' },
     transports: [
-        new winston.transports.Console(options.console)
+        new winston.transports.Console(options.console),
+        new winston.transports.File({ filename: 'logs/error.log', level: 'error' })
     ]
 } as LoggerOptions);

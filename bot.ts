@@ -1,37 +1,30 @@
-import { Client, Message }  from 'discord.js';
-import { add, ping, randomImage } from './source/functions';
-import { logger }  from './source/log';
+import { Client, Message } from 'discord.js';
+import { logger } from './source/util/log';
+import { BotService, parseMessage } from "./source/bot-service";
 
-// Initialize Discord Bot
 const bot = new Client();
+const botService = new BotService();
+const keyword = '!';
 
 bot.on('ready', () => {
     logger.info('Bot Connected');
 });
 
 bot.on('message', async (message: Message) => {
-    // It will listen for messages that will start with `!`
-    if (message.content.substring(0, 1) === '!' && !message.author.bot) { // won't respond to other bots
-        let args = message.content.substring(1).split(' ');
-        const cmd = args[0];
-
-        args = args.splice(1);
-        logger.debug(`cmd: '${cmd}'`);
-        logger.debug(`args: [${args}]`);
+    // Listening for messages starting with the keyword
+    if (message.content.startsWith(keyword) && !message.author.bot) { // Don't respond to other bots
+        const parsedMessage = parseMessage(message.content, keyword);
+        const [cmd, args] = [parsedMessage.cmd, parsedMessage.args];
 
         switch (cmd) {
             case 'ping':
-                await message.channel.send(ping());
-                break;
-            case 'smile':
-                await message.react('😄');
+                await botService.ping(message);
                 break;
             case 'get':
-                const result = await randomImage(args);
-                await message.channel.send(result);
+                await botService.getImage(args, message);
                 break;
             case 'add':
-                await message.channel.send(add(args));
+                await botService.add(args, message);
                 break;
             default:
                 // TODO: check if channelID is userID, if so: tell the bot to use !help or something
