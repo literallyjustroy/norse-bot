@@ -24,15 +24,14 @@
   "scripts": {
     "tsc": "tsc",
     "start": "tsc && node ./build/bot.js",
-    "dev": "node bot.ts --require ts-node/register",
-    "test": "tsc && nyc mocha ./build/test/"
+    "test": "tsc && nyc mocha ./build/source/test/"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/royOST/norse-bot.git"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Roy Smith roykanesmith@gmail.com",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/royOST/norse-bot/issues"
   },

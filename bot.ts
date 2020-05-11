@@ -1,6 +1,7 @@
 import { Client, Message } from 'discord.js';
 import { logger } from './source/util/log';
-import { BotService, parseMessage } from "./source/bot-service";
+import { BotService, parseMessage } from './source/bot-service';
+import { unknownMessage } from './source/util/commands';
 
 const bot = new Client();
 const botService = new BotService();
@@ -27,10 +28,10 @@ bot.on('message', async (message: Message) => {
                 await botService.add(args, message);
                 break;
             default:
-                // TODO: check if channelID is userID, if so: tell the bot to use !help or something
+                await message.channel.send(unknownMessage);
         }
     }
 });
 
 bot.login(process.env.BOT_TOKEN)
-    .then(() => logger.info(`Login Success`));
+    .then(() => logger.info('Login Success'));

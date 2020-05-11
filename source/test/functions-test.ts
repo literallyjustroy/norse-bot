@@ -1,5 +1,5 @@
 import { assert } from "chai";
-import { randomImage, ping } from '../source/functions';
+import { randomImage } from '../functions';
 
 describe('botFunctions', function() {
 

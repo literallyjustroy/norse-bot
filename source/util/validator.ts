@@ -24,7 +24,7 @@ export enum Validator {
     NUMBER
 }
 
-export function validateArgs(args: string[], argType: Validator, min?: number, max?: number): any[] | null {
+export function validateArgs(args: string[], argType: Validator, min?: number, max?: number): string[] | number[] | null {
     if (args && (!min || args.length >= min) && (!max || args.length <= max)) {
         try {
             switch (argType) {
