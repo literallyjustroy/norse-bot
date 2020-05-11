@@ -1,8 +1,8 @@
-import { validateArgs, Validator } from "./util/validator";
-import { Message } from "discord.js";
-import { ping, randomImage } from "./functions";
-import { logger } from "./util/log";
-import { ParsedMessage } from "./models/parsed-message";
+import { validateArgs, Validator } from './util/validator';
+import { Message } from 'discord.js';
+import { ping, randomImage } from './functions';
+import { logger } from './util/log';
+import { ParsedMessage } from './models/parsed-message';
 
 export class BotService {
 
@@ -13,7 +13,7 @@ export class BotService {
     async add(args: string[], message: Message): Promise<void> {
         let response: string;
         try {
-            const nums = validateArgs(args, Validator.NUMBER, 2);
+            const nums = validateArgs(args, Validator.NUMBER, 2) as number[];
             if (nums) {
                 response = String(nums[0] + nums[1]);
             } else {
@@ -29,7 +29,7 @@ export class BotService {
     async getImage(args: string[], message: Message): Promise<void> {
         let response: string;
         try {
-            const validArgs = validateArgs(args, Validator.ANY, 1);
+            const validArgs = validateArgs(args, Validator.ANY, 1) as string[];
             if (validArgs) {
                 response = response = await randomImage(validArgs);
             } else {

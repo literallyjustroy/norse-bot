@@ -1,6 +1,6 @@
-import { FlickrResponse } from "./models/flickr-response";
+import { FlickrResponse } from './models/flickr-response';
 import { logger }  from './util/log';
-import fetch from "node-fetch";
+import fetch from 'node-fetch';
 
 /**
  * Calculates how long it took for a user's message to reach the bot (starting from when the user sent the message)

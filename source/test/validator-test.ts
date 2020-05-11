@@ -1,5 +1,5 @@
 import { assert } from "chai";
-import { validateArgs, Validator } from "../source/util/validator";
+import { validateArgs, Validator } from "../util/validator";
 
 describe('validator', () => {
 
