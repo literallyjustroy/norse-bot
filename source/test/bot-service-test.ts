@@ -8,8 +8,8 @@ describe('bot-service', () => {
             const message = '! 1 2';
             const parsedMessage = parseMessage(message, '!');
             const [cmd, args] = [parsedMessage.cmd, parsedMessage.args];
-            assert.strictEqual(cmd, '1');
-            assert.deepEqual(args, ['2']);
+            assert.strictEqual(cmd, '');
+            assert.deepEqual(args, ['1', '2']);
         });
 
         it('Should return correct command and args given no arguments', async () => {
@@ -21,10 +21,10 @@ describe('bot-service', () => {
         });
 
         it('Should return correct command and args given no command or arguments', async () => {
-            const message = '!';
+            const message = '!   ';
             const parsedMessage = parseMessage(message, '!');
             const [cmd, args] = [parsedMessage.cmd, parsedMessage.args];
-            assert.notExists(cmd);
+            assert.strictEqual(cmd, '');
             assert.deepEqual(args, []);
         });
 
@@ -37,10 +37,10 @@ describe('bot-service', () => {
         });
 
         it('Should return correct command and args given oddly formatted message', async () => {
-            const message = '!testWord 1    2 4';
+            const message = '!TESTWord 1    2 4';
             const parsedMessage = parseMessage(message, '!');
             const [cmd, args] = [parsedMessage.cmd, parsedMessage.args];
-            assert.strictEqual(cmd, 'testWord');
+            assert.strictEqual(cmd, 'testword');
             assert.deepEqual(args, ['1', '2', '4']);
         });
     });

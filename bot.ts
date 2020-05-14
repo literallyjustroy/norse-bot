@@ -1,10 +1,10 @@
 import { Client, Message } from 'discord.js';
 import { logger } from './source/util/log';
-import { BotService, parseMessage } from './source/bot-service';
-import { errorMessage, unknownMessage } from './source/util/commands';
+import { generateValidationMessage, parseMessage } from './source/bot-service';
+import { commands, errorMessage, unknownMessage } from './source/util/commands';
+import { validateArgs } from './source/util/validator';
 
 const bot = new Client();
-const botService = new BotService();
 const keyword = '!';
 
 bot.on('ready', () => {
@@ -17,24 +17,22 @@ bot.on('message', async (message: Message) => {
         try {
             const parsedMessage = parseMessage(message.content, keyword);
             const [cmd, args] = [parsedMessage.cmd, parsedMessage.args];
-            console.log(message.content);
-            console.log(args);
+            const command = commands[cmd];
+            console.log(cmd, args);
 
-            switch (cmd) {
-                case 'add':
-                    await botService.add(args, message);
-                    break;
-                case 'get':
-                    await botService.getImage(args, message);
-                    break;
-                case 'ping':
-                    await botService.ping(message);
-                    break;
-                case 'ticket':
-                    await botService.ticket(args, message);
-                    break;
-                default:
-                    await message.channel.send(unknownMessage);
+            if (command && command.execute) {
+                if (command.validation) {
+                    const validArgs = validateArgs(args, command.validation.type, command.validation.min, command.validation.max);
+                    if (validArgs) {
+                        command.execute(validArgs, message);
+                    } else {
+                        await message.channel.send(generateValidationMessage(command));
+                    }
+                } else {
+                    command.execute(args, message);
+                }
+            } else {
+                await message.channel.send(unknownMessage);
             }
         } catch (error) {
             logger.error(error);
