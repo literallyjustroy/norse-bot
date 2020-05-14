@@ -1,7 +1,7 @@
-import { assert } from "chai";
+import { assert } from 'chai';
 import { randomImage } from '../functions';
 
-describe('botFunctions', function() {
+describe('functions', function() {
 
     describe('#randomImage()', function() {
         it('Should return error message for wrong number of arguments', async () => {
