@@ -70,6 +70,8 @@ export async function closeTicket(command: Command, args: string[], message: Mes
         }
         // Create archive text channel (use getTicketCategory())
         // TODO: Log ticket as .txt file
+        // send messages with the .txt file to the user who created/were added (this will require a database)
+        // look up how to do asyncronous message sending
         // Post message in the channel
         await message.channel.delete();
     } else {
