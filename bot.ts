@@ -16,10 +16,9 @@ bot.on('message', async (message: Message) => {
     if (message.content.startsWith(keyword) && !message.author.bot) { // Don't respond to other bots
         try {
             const parsedMessage = parseMessage(message.content, keyword);
-            const [cmd, args] = [parsedMessage.cmd, parsedMessage.args];
-            const command = commands[cmd];
+            const command = commands[parsedMessage.cmd];
 
-            await executeCommand(command, args, message);
+            await executeCommand(command, parsedMessage.args, message);
         } catch (error) {
             logger.error(error);
             await message.channel.send(messages.errorMessage);
