@@ -1,6 +1,7 @@
 import { Command } from '../models/command';
-import { add, getImage, ping, ticket } from '../bot-service';
+import { add, getImage, ping, ticket, ticketClose, ticketCreate } from '../bot-service';
 import { Validator } from './validator';
+import { createTicket } from "../commands/tickets";
 
 export const commands: { [key: string]: Command } = {
     add: {
@@ -57,12 +58,19 @@ export const commands: { [key: string]: Command } = {
                     message: 'Must provide ticket name'
                 },
                 permission: 0,
+                execute: ticketCreate
             },
             close: {
                 name: 'Close Ticket',
                 description: 'Closes the ticket this message was sent in.',
                 example: '!ticket close OPTIONAL_REASON',
                 permission: 0,
+                validation: {
+                    type: Validator.STRING,
+                    max: 1,
+                    message: 'If this message appears, please get help :{ '
+                },
+                execute: ticketClose
             },
             add: {
                 name: 'Add User to Ticket',
@@ -79,6 +87,3 @@ export const commands: { [key: string]: Command } = {
         }
     }
 };
-
-export const unknownMessage = 'Command not recognized';
-export const errorMessage = 'Uh oh.. An unknown error occurred.';

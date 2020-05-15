@@ -1,7 +1,7 @@
 import { assert } from 'chai';
-import { argsToString, parseMessage } from '../bot-service';
+import { argsToString, parseMessage } from '../util/parsing';
 
-describe('bot-service', () => {
+describe('parsing', () => {
 
     describe('#parseMessage()', () => {
         it('Should return correct command and args given odd spacing', async () => {

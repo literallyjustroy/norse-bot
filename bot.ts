@@ -1,8 +1,8 @@
 import { Client, Message } from 'discord.js';
 import { logger } from './source/util/log';
-import { generateValidationMessage, parseMessage } from './source/bot-service';
-import { commands, errorMessage, unknownMessage } from './source/util/commands';
-import { validateArgs } from './source/util/validator';
+import { commands } from './source/util/commands';
+import messages from './source/util/messages.json';
+import { executeCommand, parseMessage } from './source/util/parsing';
 
 const bot = new Client();
 const keyword = '!';
@@ -18,25 +18,11 @@ bot.on('message', async (message: Message) => {
             const parsedMessage = parseMessage(message.content, keyword);
             const [cmd, args] = [parsedMessage.cmd, parsedMessage.args];
             const command = commands[cmd];
-            console.log(cmd, args);
 
-            if (command && command.execute) {
-                if (command.validation) {
-                    const validArgs = validateArgs(args, command.validation.type, command.validation.min, command.validation.max);
-                    if (validArgs) {
-                        command.execute(validArgs, message);
-                    } else {
-                        await message.channel.send(generateValidationMessage(command));
-                    }
-                } else {
-                    command.execute(args, message);
-                }
-            } else {
-                await message.channel.send(unknownMessage);
-            }
+            await executeCommand(command, args, message);
         } catch (error) {
             logger.error(error);
-            await message.channel.send(errorMessage);
+            await message.channel.send(messages.errorMessage);
         }
     }
 });

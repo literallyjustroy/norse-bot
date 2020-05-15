@@ -1,4 +1,5 @@
 import { Validator } from '../util/validator';
+import { Message } from 'discord.js';
 
 export interface Command {
     name: string;
@@ -7,7 +8,7 @@ export interface Command {
     validation?: ValidationOptions;
     example: string;
     subCommands?: { [key: string]: Command };
-    execute?: Function;
+    execute?: (command: Command, nums: any[], message: Message) => Promise<void>;
 }
 
 interface ValidationOptions {
