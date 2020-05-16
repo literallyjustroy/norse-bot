@@ -34,6 +34,12 @@ export function generateValidationMessage(command?: Command): string {
     }
 }
 
+export function getCommand(inputCommand: string, commands: { [key: string]: Command }): Command {
+    return commands[inputCommand] || Object.values(commands).find((cmd: Command) =>
+        cmd.aliases && cmd.aliases.includes(inputCommand)
+    );
+}
+
 export async function executeCommand(command: Command, args: string[], message: Message): Promise<void> {
     if (command && command.execute) {
         if (command.validation) {

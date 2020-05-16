@@ -1,7 +1,6 @@
 import { CategoryChannel, DMChannel, Guild, Message, NewsChannel, TextChannel } from 'discord.js';
-import { executeCommand, argsToString, generateValidationMessage } from '../util/parsing';
-import { commands } from "../util/commands";
-import { Command } from "../models/command";
+import { executeCommand, argsToString, generateValidationMessage, getCommand } from '../util/parsing';
+import { Command } from '../models/command';
 
 const TICKET_CATEGORY_NAME = 'Tickets';
 const TICKET_TOPIC_TEXT = 'To close the ticket type "!ticket close OPTIONAL_REASON". To add another user type "!ticket add NAME".';
@@ -81,7 +80,7 @@ export async function closeTicket(command: Command, args: string[], message: Mes
 
 export async function ticketHandler(command: Command, args: string[], message: Message): Promise<void> {
     if (message.guild && command.subCommands) {
-        const subCommand = command.subCommands[args[0].toLowerCase()];
+        const subCommand = getCommand(args[0].toLowerCase(), command.subCommands);
         if (subCommand) {
             await executeCommand(subCommand, [argsToString(args)], message);
         } else {

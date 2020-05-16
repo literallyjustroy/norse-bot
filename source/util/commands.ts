@@ -1,11 +1,11 @@
 import { Command } from '../models/command';
 import { add, getImage, ping, ticket, ticketClose, ticketCreate } from '../bot-service';
 import { Validator } from './validator';
-import { createTicket } from "../commands/tickets";
 
 export const commands: { [key: string]: Command } = {
     add: {
         name: 'Add',
+        aliases: ['plus'],
         description: 'Adds two numbers together.',
         example: '!add 2 2',
         validation: {
@@ -19,6 +19,7 @@ export const commands: { [key: string]: Command } = {
     },
     get: {
         name: 'Get Image',
+        aliases: ['random', 'image', 'getimage'],
         description: 'Gets random image given a list of strings as keywords.',
         example: '!get cool dogs',
         validation: {
@@ -38,6 +39,7 @@ export const commands: { [key: string]: Command } = {
     },
     ticket: {
         name: 'Tickets',
+        aliases: ['tickets'],
         description: 'Contains ticket commands.',
         permission: 0,
         example: '!ticket create NAME_HERE',
@@ -50,6 +52,7 @@ export const commands: { [key: string]: Command } = {
         subCommands: {
             create: {
                 name: 'Create Ticket',
+                aliases: ['new', 'open', 'make'],
                 description: 'Creates a ticket with the name given.',
                 example: '!ticket create NAME_HERE',
                 validation: {
@@ -62,6 +65,7 @@ export const commands: { [key: string]: Command } = {
             },
             close: {
                 name: 'Close Ticket',
+                aliases: ['stop', 'cancel', 'remove', 'end', 'finish', 'done'],
                 description: 'Closes the ticket this message was sent in.',
                 example: '!ticket close OPTIONAL_REASON',
                 permission: 0,
@@ -74,6 +78,7 @@ export const commands: { [key: string]: Command } = {
             },
             add: {
                 name: 'Add User to Ticket',
+                aliases: ['adduser'],
                 description: 'Adds the given user to the ticket this message was sent in (Ex: !ticket add billy)',
                 example: '!ticket add NAME_HERE',
                 validation: {
