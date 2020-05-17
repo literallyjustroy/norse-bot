@@ -19,6 +19,10 @@ export function parseMessage(content: string, keywordString: string): ParsedMess
     return { cmd: cmd, args: args };
 }
 
+export function stringToName(input: string): string {
+    return input.toLowerCase().replace(' ', '-');
+}
+
 export function argsToString(args: string[]): string {
     return args.slice(1, args.length + 1).join(' ');
 }

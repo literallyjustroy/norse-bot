@@ -54,11 +54,10 @@ export const commands: { [key: string]: Command } = {
                 name: 'Create Ticket',
                 aliases: ['new', 'open', 'make'],
                 description: 'Creates a ticket with the name given.',
-                example: '!ticket create NAME_HERE',
+                example: '!ticket create OPTIONAL_NAME',
                 validation: {
                     type: Validator.STRING,
-                    min: 1,
-                    message: 'Must provide ticket name'
+                    message: 'Invalid ticket name'
                 },
                 permission: 0,
                 execute: ticketCreate
@@ -69,11 +68,6 @@ export const commands: { [key: string]: Command } = {
                 description: 'Closes the ticket this message was sent in.',
                 example: '!ticket close OPTIONAL_REASON',
                 permission: 0,
-                validation: {
-                    type: Validator.STRING,
-                    max: 1,
-                    message: 'If this message appears, please get help :{ '
-                },
                 execute: ticketClose
             },
             add: {
