@@ -37,18 +37,18 @@ describe('parsing', () => {
         });
 
         it('Should return correct command and args given oddly formatted message', async () => {
-            const message = '!TESTWord 1    2 4';
+            const message = '!TESTWord 1    2 4Aa';
             const parsedMessage = parseMessage(message, '!');
             const [cmd, args] = [parsedMessage.cmd, parsedMessage.args];
             assert.strictEqual(cmd, 'testword');
-            assert.deepEqual(args, ['1', '2', '4']);
+            assert.deepEqual(args, ['1', '2', '4Aa']);
         });
     });
 
     describe('#argsToString()', () => {
         it('Should return correct string from list of string args', async () => {
-            const args = ['command', '1', '2'];
-            assert.strictEqual(argsToString(args), '1 2');
+            const args = ['command', '1', '2Aa'];
+            assert.strictEqual(argsToString(args), '1 2Aa');
         });
 
         it('Should return empty string from list of single arg (command)', async () => {

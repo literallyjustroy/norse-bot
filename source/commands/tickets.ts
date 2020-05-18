@@ -1,11 +1,21 @@
-import { CategoryChannel, DMChannel, Guild, Message, MessageAttachment, NewsChannel, TextChannel } from 'discord.js';
+import {
+    CategoryChannel,
+    DMChannel,
+    Guild,
+    Message,
+    MessageAttachment,
+    MessageEmbed,
+    NewsChannel,
+    TextChannel
+} from 'discord.js';
 import { executeCommand, argsToString, generateValidationMessage, getCommand, stringToName } from '../util/parsing';
 import { Command } from '../models/command';
+import { capitalizeFirstLetter, sleep } from '../util/util';
 
 const TICKET_CATEGORY_NAME = 'Tickets';
 const TICKET_LOG_NAME = 'ticket-logs';
 const TICKET_LOG_TOPIC_TEXT = 'Logs of every ticket closed';
-const TICKET_TOPIC_TEXT = 'To close the ticket type "!ticket close OPTIONAL_REASON". To add another user type "!ticket add NAME".';
+const TICKET_TOPIC_TEXT = 'To close the ticket type "!ticket close (optional reason)". To add another user type "!ticket add (name)"';
 
 async function getTicketsCategory(guild: Guild): Promise<CategoryChannel> {
     let ticketsCategory = await guild.channels.cache.find(channel =>
@@ -53,10 +63,26 @@ export async function createTicket(command: Command, args: string[], message: Me
     if (ticketName && ticketName.length && ticketName.length <= 100 && stringToName(ticketName) !== TICKET_LOG_NAME) {
         const category = await getTicketsCategory(guild);
         const ticketChannel = await createTicketTextChannel(ticketName, category, message, guild);
+        console.log(message.content);
 
-        await ticketChannel.send(`Ticket "${ticketName}" opened by ${message.author.tag}`);
-        await message.delete(); // TODO: delay this (delete after 15/30 sec)
-        // TODO: Link them to the channel, better starting message in the ticket with a mention and an embebbed command section
+        const botResponse = await message.channel.send(`Ticket opened: <#${ticketChannel.id}>`);
+
+        const ticketIntroMessage = new MessageEmbed()
+            .setColor('#ffbf00')
+            .setTitle(capitalizeFirstLetter(ticketName))
+            .setAuthor(`${message.author.username}`, message.author.displayAvatarURL())
+            .setDescription('Describe why you opened the ticket so that the responders can better assist you')
+            .addFields(
+                { name: 'Closing the ticket', value: '***!ticket close (optional reason)***' },
+                { name: 'Adding another user', value: '***!ticket add (username)***' },
+            );
+
+        // await ticketChannel.send(`Ticket **${ticketName}** opened by <@!${message.author.id}>`);
+        await ticketChannel.send(`Opened by <@!${message.author.id}>`, ticketIntroMessage);
+
+        await sleep(15000); // Wait 15 seconds
+        await botResponse.delete();
+        await message.delete();
     } else {
         await message.channel.send(generateValidationMessage(command));
     }
@@ -64,9 +90,9 @@ export async function createTicket(command: Command, args: string[], message: Me
 
 async function isTicketChannel(channel: TextChannel | DMChannel | NewsChannel): Promise<boolean> {
     return channel.type === 'text' &&
-        channel.topic === TICKET_TOPIC_TEXT &&
         channel.parent !== null &&
-        channel.parent.name === TICKET_CATEGORY_NAME;
+        channel.parent.name === TICKET_CATEGORY_NAME &&
+        channel.name !== TICKET_LOG_NAME;
 }
 
 async function getTicketLogChannel(category: CategoryChannel, guild: Guild): Promise<TextChannel> {
@@ -110,10 +136,10 @@ export async function closeTicket(command: Command, args: string[], message: Mes
         const uniqueTicketUsers = ticketChannel.members.filter(member => !ticketLogChannel.members.has(member.id));
         const uniqueTicketUsersNames: string[] = [];
         uniqueTicketUsers.forEach(user => {
-            uniqueTicketUsersNames.push(user.displayName + '\'s');
+            uniqueTicketUsersNames.push(`<@!${user.id}>'s`);
         });
 
-        let closeMessage = `${uniqueTicketUsersNames.join(' & ')} ${!uniqueTicketUsers.size ? 'T' : 't'}icket closed by ${message.author.tag}`;
+        let closeMessage = `${uniqueTicketUsersNames.join(' & ')} ${!uniqueTicketUsers.size ? 'T' : 't'}icket closed by <@!${message.author.id}>`;
         if (args[0]) {
             closeMessage += ` for reason: "${args[0]}"`;
         }
@@ -122,6 +148,7 @@ export async function closeTicket(command: Command, args: string[], message: Mes
         uniqueTicketUsers.forEach(user => {
             user.send(closeMessage, attachment);
         });
+
         await ticketChannel.delete();
     } else {
         await message.channel.send('Can only close Ticket channels');
