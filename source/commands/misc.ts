@@ -1,14 +1,14 @@
-import { FlickrResponse } from './models/flickr-response';
-import { logger }  from './util/log';
+import { FlickrResponse } from '../models/flickr-response';
+import { logger }  from '../util/log';
 import fetch from 'node-fetch';
 
 /**
  * Calculates how long it took for a user's message to reach the bot (starting from when the user sent the message)
- * User PC -> Discord's Servers -> Norsebot
+ * User PC -> Discord's Servers -> NorseBot
  * @param sentTime
  */
-export function ping(sentTime: number): string {
-    return String(new Date().valueOf() - sentTime) + ' ms';
+export function getPing(sentTime: number): string {
+    return String(Math.abs(Date.now().valueOf() - sentTime)) + ' ms';
 }
 
 /**
@@ -43,4 +43,3 @@ export async function randomImage(keywords: string[]): Promise<string> {
     }
     return response;
 }
-

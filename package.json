@@ -4,7 +4,7 @@
   "description": "Discord bot created for NKU Esports",
   "main": "bot.ts",
   "dependencies": {
-    "discord.js": "^11.5.1",
+    "discord.js": "^12.2.0",
     "node-fetch": "^2.6.0",
     "typescript": "^3.8.3",
     "winston": "^3.2.1"
@@ -14,6 +14,7 @@
     "@types/mocha": "^7.0.2",
     "@types/node": "^13.13.5",
     "@types/node-fetch": "^2.5.7",
+    "@types/ws": "^7.2.4",
     "@typescript-eslint/eslint-plugin": "^2.31.0",
     "@typescript-eslint/parser": "^2.31.0",
     "chai": "^4.2.0",

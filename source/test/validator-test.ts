@@ -1,27 +1,27 @@
-import { assert } from "chai";
-import { validateArgs, Validator } from "../util/validator";
+import { assert } from 'chai';
+import { validateArgs, Validator } from '../util/validator';
 
 describe('validator', () => {
 
     describe('#validateArgs()', () => {
         it('Should return null for too few arguments', () => {
             const args: string[] = [];
-            assert.notExists(validateArgs(args, Validator.ANY, 1));
+            assert.notExists(validateArgs(args, Validator.STRING, 1));
         });
 
         it('Should return null for too many arguments', () => {
             const args: string[] = ['a', 'b', 'c'];
-            assert.notExists(validateArgs(args, Validator.ANY, 1, 2));
+            assert.notExists(validateArgs(args, Validator.STRING, 1, 2));
         });
 
         it('Should return empty arguments for 0 string arguments', () => {
             const args: string[] = [];
-            assert.deepEqual(validateArgs(args, Validator.ANY, 0), []);
+            assert.deepEqual(validateArgs(args, Validator.STRING, 0), []);
         });
 
         it('Should return arguments for correct number of arguments', () => {
             const args: string[] = ['a', 'b', 'c'];
-            assert.deepEqual(validateArgs(args, Validator.ANY, 3, 3), ['a', 'b', 'c']);
+            assert.deepEqual(validateArgs(args, Validator.STRING, 3, 3), ['a', 'b', 'c']);
         });
 
 

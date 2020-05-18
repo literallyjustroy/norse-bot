@@ -1,5 +1,5 @@
-import { LoggerOptions } from "winston";
-import winston from "winston";
+import { LoggerOptions } from 'winston';
+import winston from 'winston';
 
 const options = {
     console: {
