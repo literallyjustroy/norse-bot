@@ -60,7 +60,7 @@ export async function createTicket(command: Command, args: string[], message: Me
         ticketName = message.author.username + '-unnamed';
     }
     const guild = message.guild as Guild;
-    if (ticketName && ticketName.length && ticketName.length <= 100 && stringToName(ticketName) !== TICKET_LOG_NAME) {
+    if (ticketName && ticketName.length && ticketName.length <= 100 && stringToName(ticketName) !== stringToName(TICKET_LOG_NAME)) {
         const category = await getTicketsCategory(guild);
         const ticketChannel = await createTicketTextChannel(ticketName, category, message, guild);
 

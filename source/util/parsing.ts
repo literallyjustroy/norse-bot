@@ -20,7 +20,7 @@ export function parseMessage(content: string, keywordString: string): ParsedMess
 }
 
 export function stringToName(input: string): string {
-    return input.toLowerCase().replace(' ', '-');
+    return input.toLowerCase().replace(/[^a-zA-Z0-9]/g, '');
 }
 
 export function argsToString(args: string[]): string {
