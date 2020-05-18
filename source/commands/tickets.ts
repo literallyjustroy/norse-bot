@@ -15,7 +15,7 @@ import { capitalizeFirstLetter, sleep } from '../util/util';
 const TICKET_CATEGORY_NAME = 'Tickets';
 const TICKET_LOG_NAME = 'ticket-logs';
 const TICKET_LOG_TOPIC_TEXT = 'Logs of every ticket closed';
-const TICKET_TOPIC_TEXT = 'To close the ticket type "!ticket close (optional reason)". To add another user type "!ticket add (name)"';
+const TICKET_TOPIC_TEXT = 'To close the ticket type "!ticket close (optional reason)". To add another user type "!ticket add @(username)"';
 
 async function getTicketsCategory(guild: Guild): Promise<CategoryChannel> {
     let ticketsCategory = await guild.channels.cache.find(channel =>
@@ -63,7 +63,6 @@ export async function createTicket(command: Command, args: string[], message: Me
     if (ticketName && ticketName.length && ticketName.length <= 100 && stringToName(ticketName) !== TICKET_LOG_NAME) {
         const category = await getTicketsCategory(guild);
         const ticketChannel = await createTicketTextChannel(ticketName, category, message, guild);
-        console.log(message.content);
 
         const botResponse = await message.channel.send(`Ticket opened: <#${ticketChannel.id}>`);
 
@@ -74,7 +73,7 @@ export async function createTicket(command: Command, args: string[], message: Me
             .setDescription('Describe why you opened the ticket so that the responders can better assist you')
             .addFields(
                 { name: 'Closing the ticket', value: '***!ticket close (optional reason)***' },
-                { name: 'Adding another user', value: '***!ticket add (username)***' },
+                { name: 'Adding another user', value: '***!ticket add @(username)***' },
             );
 
         // await ticketChannel.send(`Ticket **${ticketName}** opened by <@!${message.author.id}>`);
@@ -152,6 +151,23 @@ export async function closeTicket(command: Command, args: string[], message: Mes
         await ticketChannel.delete();
     } else {
         await message.channel.send('Can only close Ticket channels');
+    }
+}
+
+export async function addUserToTicket(command: Command, args: string[], message: Message): Promise<void> {
+    if (await isTicketChannel(message.channel)) {
+        const channel = message.channel as TextChannel;
+
+        const newPerson = message.mentions.members?.first();
+
+        if (newPerson) {
+            await channel.updateOverwrite(newPerson, { VIEW_CHANNEL: true });
+            await message.channel.send(`Added <@!${newPerson.id}> to the ticket.`);
+        } else {
+            await message.channel.send(`Invalid mention. Must @USERNAME. (Ex: !ticket add <@!${message.author.id}>)`);
+        }
+    } else {
+        await message.channel.send('Can only add users in Ticket channels');
     }
 }
 

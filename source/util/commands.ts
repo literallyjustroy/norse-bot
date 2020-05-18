@@ -1,6 +1,7 @@
 import { Command } from '../models/command';
 import { add, getImage, ping, ticket, ticketClose, ticketCreate } from '../bot-service';
 import { Validator } from './validator';
+import { addUserToTicket } from '../commands/tickets';
 
 export const commands: { [key: string]: Command } = {
     add: {
@@ -73,8 +74,8 @@ export const commands: { [key: string]: Command } = {
             add: {
                 name: 'Add User to Ticket',
                 aliases: ['adduser'],
-                description: 'Adds the given user to the ticket this message was sent in (Ex: !ticket add billy)',
-                example: '!ticket add NAME_HERE',
+                description: 'Adds the given user to the ticket this message was sent in.',
+                example: '!ticket add @username',
                 validation: {
                     type: Validator.STRING,
                     min: 1,
@@ -82,6 +83,7 @@ export const commands: { [key: string]: Command } = {
                     message: 'Must provide a single user'
                 },
                 permission: 0,
+                execute: addUserToTicket
             }
         }
     }
