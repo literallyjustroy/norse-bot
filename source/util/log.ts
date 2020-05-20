@@ -1,5 +1,6 @@
-import { LoggerOptions } from 'winston';
 import winston from 'winston';
+import Transport from 'winston-transport';
+import { logs } from './database';
 
 const options = {
     console: {
@@ -10,11 +11,35 @@ const options = {
     },
 };
 
+class MonkTransport extends Transport {
+
+    constructor(opts: Transport.TransportStreamOptions) {
+        super(opts);
+    }
+
+    async log(info: any, callback: () => void): Promise<void> {
+        setImmediate(() => {
+            this.emit('logged', info);
+        });
+
+        await logs.insert(info);
+
+        callback();
+    }
+}
+
 export const logger = winston.createLogger({
     level: 'info',
-    format: winston.format.json(),
+    format: winston.format.combine(
+        winston.format.timestamp({
+            format: 'YYYY-MM-DD HH:mm:ss'
+        }),
+        winston.format.json(),
+        winston.format.prettyPrint()
+    ),
     transports: [
         new winston.transports.Console(options.console),
+        new MonkTransport({ level: 'error' }),
         new winston.transports.File({ filename: 'logs/error.log', level: 'error' })
     ]
-} as LoggerOptions);
+});

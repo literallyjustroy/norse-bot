@@ -3,6 +3,7 @@ import { Command } from '../models/command';
 import { Message } from 'discord.js';
 import { validateArgs } from './validator';
 import messages from './messages.json';
+import { getPrefix } from './database';
 
 export function parseMessage(content: string, keywordString: string): ParsedMessage {
     let args = content.slice(keywordString.length).split(/ +/);
@@ -27,12 +28,12 @@ export function argsToString(args: string[]): string {
     return args.slice(1, args.length + 1).join(' ');
 }
 
-export function generateValidationMessage(command?: Command): string {
+export async function generateValidationMessage(command?: Command, message?: Message): Promise<string> {
     if (command) {
         if (command.validation) {
-            return `${command.validation.message} (Ex: ${command.example})`;
+            return `${command.validation.message} (Ex: ${await getPrefix((message ? message.guild : null))}${command.example})`;
         }
-        return `Invalid usage of ${command.name} (Ex: ${command.example})`;
+        return `Invalid usage of ${command.name} (Ex: ${await getPrefix((message ? message.guild : null))}${command.example})`;
     } else {
         return 'Invalid usage of command';
     }
@@ -51,12 +52,12 @@ export async function executeCommand(command: Command, args: string[], message: 
             if (validArgs) {
                 await command.execute(command, validArgs, message);
             } else {
-                await message.channel.send(generateValidationMessage(command));
+                await message.channel.send(await generateValidationMessage(command));
             }
         } else {
             await command.execute(command, args, message);
         }
     } else {
-        await message.channel.send(messages.unknownMessage);
+        await message.channel.send(`${messages.unknownMessage} (Try ${await getPrefix((message ? message.guild : null))}help)`);
     }
 }

@@ -1,5 +1,5 @@
 import { Command } from '../models/command';
-import { add, getImage, ping, ticket, ticketClose, ticketCreate } from '../bot-service';
+import { add, getImage, ping, setPrefix, ticket, ticketClose, ticketCreate } from '../bot-service';
 import { Validator } from './validator';
 import { addUserToTicket } from '../commands/tickets';
 
@@ -8,7 +8,7 @@ export const commands: { [key: string]: Command } = {
         name: 'Add',
         aliases: ['plus'],
         description: 'Adds two numbers together.',
-        example: '!add 2 2',
+        example: 'add 2 2',
         validation: {
             type: Validator.NUMBER,
             min: 2,
@@ -22,7 +22,7 @@ export const commands: { [key: string]: Command } = {
         name: 'Get Image',
         aliases: ['random', 'image', 'getimage'],
         description: 'Gets random image given a list of strings as keywords.',
-        example: '!get cool dogs',
+        example: 'get cool dogs',
         validation: {
             type: Validator.STRING,
             min: 1,
@@ -34,16 +34,30 @@ export const commands: { [key: string]: Command } = {
     ping: {
         name: 'Ping',
         description: 'Calculates how long it took for a user\'s message to reach the bot.',
-        example: '!ping',
+        example: 'ping',
         permission: 0,
         execute: ping
+    },
+    prefix: {
+        name: 'Set Command Prefix',
+        aliases: ['setprefix', 'key', 'setkey', 'keyword', 'setkeyword'],
+        description: 'Sets the server\'s command prefix (How to begin a command)',
+        example: 'prefix ?',
+        validation: {
+            type: Validator.STRING,
+            min: 1,
+            max: 1,
+            message: 'Must provide a non-spaced, valid prefix'
+        },
+        permission: 0,
+        execute: setPrefix
     },
     ticket: {
         name: 'Tickets',
         aliases: ['tickets'],
         description: 'Contains ticket commands.',
         permission: 0,
-        example: '!ticket create NAME_HERE',
+        example: 'ticket create NAME_HERE',
         validation: {
             type: Validator.STRING,
             min: 1,
@@ -55,7 +69,7 @@ export const commands: { [key: string]: Command } = {
                 name: 'Create Ticket',
                 aliases: ['new', 'open', 'make'],
                 description: 'Creates a ticket with the name given.',
-                example: '!ticket create OPTIONAL_NAME',
+                example: 'ticket create OPTIONAL_NAME',
                 validation: {
                     type: Validator.STRING,
                     message: 'Invalid ticket name'
@@ -67,7 +81,7 @@ export const commands: { [key: string]: Command } = {
                 name: 'Close Ticket',
                 aliases: ['stop', 'cancel', 'remove', 'end', 'finish', 'done'],
                 description: 'Closes the ticket this message was sent in.',
-                example: '!ticket close OPTIONAL_REASON',
+                example: 'ticket close OPTIONAL_REASON',
                 permission: 0,
                 execute: ticketClose
             },
@@ -75,7 +89,7 @@ export const commands: { [key: string]: Command } = {
                 name: 'Add User to Ticket',
                 aliases: ['adduser'],
                 description: 'Adds the given user to the ticket this message was sent in.',
-                example: '!ticket add @username',
+                example: 'ticket add @username',
                 validation: {
                     type: Validator.STRING,
                     min: 1,

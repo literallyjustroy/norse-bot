@@ -18,7 +18,7 @@ export function getPing(sentTime: number): string {
  * @returns {Promise<string>} Returns a URL of a photo as a string, or an error message
  */
 export async function randomImage(keywords: string[]): Promise<string> {
-    let response = 'Error getting requested image';
+    let response: string;
     const keyword = encodeURI(keywords.join(' '));
     let numPhotos = 100;
     const url = `https://www.flickr.com/services/rest/?method=flickr.photos.search&sort=relevance&per_page=100&format=json&nojsoncallback=1&api_key=0c748ca30b04100a36deb13f12b3c1d3&tags=${keyword}`;
@@ -36,10 +36,9 @@ export async function randomImage(keywords: string[]): Promise<string> {
 
             const photo = flickrResponse.photos.photo[photoIndex];
             response = `http://farm${photo.farm}.staticflickr.com/${photo.server}/${photo.id}_${photo.secret}.jpg`;
-            logger.debug(response);
         }
-    } catch (error) {
-        logger.error(error);
+    } catch(error) {
+        response = 'Error getting requested image';
     }
     return response;
 }
