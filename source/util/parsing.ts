@@ -85,6 +85,6 @@ export async function executeCommand(command: Command, args: string[], message: 
             await message.channel.send(messages.permissionMessage);
         }
     } else if (message.channel.type === 'dm'){
-        await message.channel.send(`${messages.unknownMessage} (Try ${getDao().getPrefix((message ? message.guild : null))}help)`);
+        await message.channel.send(`${messages.unknownMessage} (Try ${getDao().getPrefix(message.guild)}help)`);
     }
 }
