@@ -29,7 +29,7 @@
     "build": "tsc",
     "start": "tsc && node ./build/bot.js",
     "dev": "ts-node bot.ts",
-    "test": "nyc mocha -r ts-node/register ./build/source/test/"
+    "test": "nyc mocha -r ts-node/register source/test/* "
   },
   "repository": {
     "type": "git",

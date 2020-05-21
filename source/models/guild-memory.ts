@@ -3,4 +3,5 @@ export interface GuildMemory {
     name: string;
     owner?: string;
     prefix: string;
+    adminRoleId?: string;
 }

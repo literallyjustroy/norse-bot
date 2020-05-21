@@ -3,7 +3,7 @@ import { Command } from '../models/command';
 import { Message } from 'discord.js';
 import { validateArgs } from './validator';
 import messages from './messages.json';
-import { getPrefix } from './database';
+import { getAdminRoleId, getPrefix } from './database';
 
 export function parseMessage(content: string, keywordString: string): ParsedMessage {
     let args = content.slice(keywordString.length).split(/ +/);
@@ -28,12 +28,12 @@ export function argsToString(args: string[]): string {
     return args.slice(1, args.length + 1).join(' ');
 }
 
-export async function generateValidationMessage(command?: Command, message?: Message): Promise<string> {
+export function generateValidationMessage(command?: Command, message?: Message): string {
     if (command) {
         if (command.validation) {
-            return `${command.validation.message} (Ex: ${await getPrefix((message ? message.guild : null))}${command.example})`;
+            return `${command.validation.message} (Ex: ${getPrefix((message ? message.guild : null))}${command.example})`;
         }
-        return `Invalid usage of ${command.name} (Ex: ${await getPrefix((message ? message.guild : null))}${command.example})`;
+        return `Invalid usage of ${command.name} (Ex: ${getPrefix((message ? message.guild : null))}${command.example})`;
     } else {
         return 'Invalid usage of command';
     }
@@ -45,19 +45,38 @@ export function getCommand(inputCommand: string, commands: { [key: string]: Comm
     );
 }
 
+function hasPermission(command: Command, message: Message): boolean {
+    if (command.permission !== 0) {
+        if (message.guild) {
+            const user = message.guild.members.cache.get(message.author.id);
+            const adminRole = getAdminRoleId(message.guild);
+            if (user && (user.hasPermission('ADMINISTRATOR') || (adminRole && user.roles.cache.has(adminRole)))) {
+                return true;
+            }
+        }
+        return false;
+    } else {
+        return true;
+    }
+}
+
 export async function executeCommand(command: Command, args: string[], message: Message): Promise<void> {
     if (command && command.execute) {
-        if (command.validation) {
-            const validArgs = validateArgs(args, command.validation.type, command.validation.min, command.validation.max);
-            if (validArgs) {
-                await command.execute(command, validArgs, message);
+        if (hasPermission(command, message)) {
+            if (command.validation) {
+                const validArgs = validateArgs(args, command.validation.type, command.validation.min, command.validation.max);
+                if (validArgs) {
+                    await command.execute(command, validArgs, message);
+                } else {
+                    await message.channel.send(generateValidationMessage(command));
+                }
             } else {
-                await message.channel.send(await generateValidationMessage(command));
+                await command.execute(command, args, message);
             }
         } else {
-            await command.execute(command, args, message);
+            await message.channel.send(messages.permissionMessage);
         }
     } else {
-        await message.channel.send(`${messages.unknownMessage} (Try ${await getPrefix((message ? message.guild : null))}help)`);
+        await message.channel.send(`${messages.unknownMessage} (Try ${getPrefix((message ? message.guild : null))}help)`);
     }
 }

@@ -1,7 +1,10 @@
-import { Command } from '../models/command';
-import { add, getImage, ping, setPrefix, ticket, ticketClose, ticketCreate } from '../bot-service';
-import { Validator } from './validator';
-import { addUserToTicket } from '../commands/tickets';
+import { Command } from './models/command';
+import { Validator } from './util/validator';
+import { addUserToTicket, closeTicket, createTicket, ticketHandler } from './commands/tickets';
+import { setAdmin } from './commands/setadmin';
+import { updatePrefix } from './commands/prefix';
+import { add, getImage, ping } from './commands/misc';
+import { help } from './commands/help';
 
 export const commands: { [key: string]: Command } = {
     add: {
@@ -18,6 +21,20 @@ export const commands: { [key: string]: Command } = {
         permission: 0,
         execute: add
     },
+    setadmin: {
+        name: 'Set Admin Role',
+        aliases: ['admin', 'adminrole'],
+        description: 'Sets the given role as a bot controlling role.',
+        example: 'ticket add @Roy [Visual2D]',
+        validation: {
+            type: Validator.STRING,
+            min: 1,
+            max: 1,
+            message: 'Must provide a single role'
+        },
+        permission: 2,
+        execute: setAdmin
+    },
     get: {
         name: 'Get Image',
         aliases: ['random', 'image', 'getimage'],
@@ -30,6 +47,13 @@ export const commands: { [key: string]: Command } = {
         },
         permission: 0,
         execute: getImage
+    },
+    help: {
+        name: 'Help',
+        description: 'Gets the description of all commands (or command specified)',
+        example: 'help ticket',
+        permission: 0,
+        execute: help
     },
     ping: {
         name: 'Ping',
@@ -49,47 +73,43 @@ export const commands: { [key: string]: Command } = {
             max: 1,
             message: 'Must provide a non-spaced, valid prefix'
         },
-        permission: 0,
-        execute: setPrefix
+        permission: 2,
+        execute: updatePrefix
     },
     ticket: {
         name: 'Tickets',
         aliases: ['tickets'],
         description: 'Contains ticket commands.',
         permission: 0,
-        example: 'ticket create NAME_HERE',
+        example: 'ticket create jeff hit me',
         validation: {
             type: Validator.STRING,
             min: 1,
             message: 'Must provide at least one sub-command'
         },
-        execute: ticket,
+        execute: ticketHandler,
         subCommands: {
             create: {
                 name: 'Create Ticket',
                 aliases: ['new', 'open', 'make'],
                 description: 'Creates a ticket with the name given.',
-                example: 'ticket create OPTIONAL_NAME',
-                validation: {
-                    type: Validator.STRING,
-                    message: 'Invalid ticket name'
-                },
+                example: 'ticket create jeff hit me',
                 permission: 0,
-                execute: ticketCreate
+                execute: createTicket
             },
             close: {
                 name: 'Close Ticket',
                 aliases: ['stop', 'cancel', 'remove', 'end', 'finish', 'done'],
                 description: 'Closes the ticket this message was sent in.',
-                example: 'ticket close OPTIONAL_REASON',
+                example: 'ticket close jeff said it was an accident :)',
                 permission: 0,
-                execute: ticketClose
+                execute: closeTicket
             },
             add: {
                 name: 'Add User to Ticket',
                 aliases: ['adduser'],
                 description: 'Adds the given user to the ticket this message was sent in.',
-                example: 'ticket add @username',
+                example: 'ticket add @Roy [Visual2D]',
                 validation: {
                     type: Validator.STRING,
                     min: 1,

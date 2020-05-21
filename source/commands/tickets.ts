@@ -10,7 +10,7 @@ import {
 } from 'discord.js';
 import { executeCommand, argsToString, generateValidationMessage, getCommand, stringToName } from '../util/parsing';
 import { Command } from '../models/command';
-import { capitalizeFirstLetter, sleep } from '../util/util';
+import { capitalizeFirstLetter } from '../util/util';
 import { getPrefix } from '../util/database';
 
 const TICKET_CATEGORY_NAME = 'Tickets';
@@ -52,7 +52,7 @@ async function createTicketTextChannel(ticketName: string, category: CategoryCha
 }
 
 export async function createTicket(command: Command, args: string[], message: Message): Promise<void> {
-    let ticketName = '';
+    let ticketName: string;
     if (args[0]) {
         ticketName = args[0];
     } else {
@@ -71,17 +71,16 @@ export async function createTicket(command: Command, args: string[], message: Me
             .setAuthor(`${message.author.username}`, message.author.displayAvatarURL())
             .setDescription('Describe why you opened the ticket so that the responders can better assist you')
             .addFields(
-                { name: 'Closing the ticket', value: `***${await getPrefix(message.guild)}ticket close (optional reason)***` },
-                { name: 'Adding another user', value: `***${await getPrefix(message.guild)}ticket add @(username)***` },
+                { name: 'Closing the ticket', value: `***${getPrefix(message.guild)}ticket close (optional reason)***` },
+                { name: 'Adding another user', value: `***${getPrefix(message.guild)}ticket add @(username)***` },
             );
 
         await ticketChannel.send(`Ticket opened by <@!${message.author.id}>`, ticketIntroMessage);
 
-        await sleep(15000); // Wait 15 seconds
-        await botResponse.delete();
-        await message.delete();
+        await botResponse.delete({ timeout: 15000 });
+        await message.delete({ timeout: 15000 });
     } else {
-        await message.channel.send(await generateValidationMessage(command));
+        await message.channel.send(generateValidationMessage(command));
     }
 }
 
@@ -162,7 +161,7 @@ export async function addUserToTicket(command: Command, args: string[], message:
             await channel.updateOverwrite(newPerson, { VIEW_CHANNEL: true });
             await message.channel.send(`Added <@!${newPerson.id}> to the ticket.`);
         } else {
-            await message.channel.send(`Invalid mention. Must @USERNAME. (Ex: ${await getPrefix(message.guild)}ticket add <@!${message.author.id}>)`);
+            await message.channel.send(`Invalid mention. Must @USERNAME. (Ex: ${getPrefix(message.guild)}ticket add <@!${message.author.id}>)`);
         }
     } else {
         await message.channel.send('Can only add users in Ticket channels');
@@ -175,7 +174,7 @@ export async function ticketHandler(command: Command, args: string[], message: M
         if (subCommand) {
             await executeCommand(subCommand, [argsToString(args)], message);
         } else {
-            await message.channel.send(`Invalid ticket sub-command (try ${await getPrefix(message.guild)}help ticket)`);
+            await message.channel.send(`Invalid ticket sub-command (try ${getPrefix(message.guild)}help ticket)`);
         }
     } else {
         await message.channel.send('Ticket commands must be sent in a server text channel');

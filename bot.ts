@@ -1,9 +1,9 @@
-import { Client, Message } from 'discord.js';
+import { Client, Guild, Message } from 'discord.js';
 import { logger } from './source/util/log';
-import { commands } from './source/util/commands';
+import { commands } from './source/commands';
 import messages from './source/util/messages.json';
 import { executeCommand, getCommand, parseMessage } from './source/util/parsing';
-import { closeConnection, getPrefix } from './source/util/database';
+import { closeConnection, getPrefix, initializeMemory, setNewGuildInMemory } from './source/util/database';
 
 const bot = new Client();
 
@@ -12,20 +12,26 @@ if (!process.env.BOT_TOKEN) {
     process.exit(1);
 }
 
-bot.on('ready', () => {
+// BOT EVENTS
+
+bot.on('ready', async () => {
     logger.info('Bot Connected');
+    await initializeMemory(bot);
+    logger.info('Memory Loaded');
 });
 
 bot.on('message', async (message: Message) => {
     try {
-        const prefix = await getPrefix(message.guild);
+        if (!message.author.bot) { // Don't respond to other bots
+            const prefix = getPrefix(message.guild);
 
-        // Listening for messages starting with the prefix
-        if (message.content.startsWith(prefix) && !message.author.bot) { // Don't respond to other bots
-            const parsedMessage = parseMessage(message.content, prefix);
-            const command = getCommand(parsedMessage.cmd, commands);
+            // Listening for messages starting with the prefix
+            if (message.content.startsWith(prefix)) {
+                const parsedMessage = parseMessage(message.content, prefix);
+                const command = getCommand(parsedMessage.cmd, commands);
 
-            await executeCommand(command, parsedMessage.args, message);
+                await executeCommand(command, parsedMessage.args, message);
+            }
         }
     } catch (error) {
         logger.error({ user: message.author.username, input: message.content, message: JSON.stringify(error) });
@@ -33,8 +39,17 @@ bot.on('message', async (message: Message) => {
     }
 });
 
-bot.login(process.env.BOT_TOKEN)
-    .then(() => logger.info('Login Success'));
+bot.on('guildCreate', async (guild: Guild) => {
+    await setNewGuildInMemory(guild);
+});
+
+// BOT START
+
+bot.login(process.env.BOT_TOKEN).then(() =>
+    logger.info('Login Success')
+);
+
+// OTHER EVENTS
 
 // This will handle process.exit():
 process.on('exit', closeConnection);
