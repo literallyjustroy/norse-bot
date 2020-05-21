@@ -7,8 +7,8 @@ import { closeConnection, getPrefix, initializeMemory, setNewGuildInMemory } fro
 
 const bot = new Client();
 
-if (!process.env.BOT_TOKEN) {
-    logger.error({ message: 'Environment variable BOT_TOKEN not setup' });
+if (!process.env.BOT_TOKEN || !process.env.DB_LOGIN_URL) {
+    logger.error({ message: 'Environment variables not setup' });
     process.exit(1);
 }
 

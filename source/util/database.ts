@@ -4,12 +4,7 @@ import { Client, Guild, Role } from 'discord.js';
 import messages from '../util/messages.json';
 import { GuildMemory } from '../models/guild-memory';
 
-if (!process.env.DB_LOGIN_URL) {
-    logger.error({ message: 'Environment variable DB_LOGIN_URL not setup' });
-    process.exit(1);
-}
-
-const db = monk(process.env.DB_LOGIN_URL);
+const db = monk(process.env.DB_LOGIN_URL || '');
 const guilds = db.get('guilds');
 export const logs = db.get('logs');
 
