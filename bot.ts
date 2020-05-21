@@ -3,7 +3,7 @@ import { logger } from './source/util/log';
 import { commands } from './source/commands';
 import messages from './source/util/messages.json';
 import { executeCommand, getCommand, parseMessage } from './source/util/parsing';
-import { dao } from './source/util/database';
+import { getDao } from './source/util/database';
 
 if (!process.env.BOT_TOKEN) {
     logger.error({ message: 'Bot token not provided' });
@@ -11,6 +11,7 @@ if (!process.env.BOT_TOKEN) {
 }
 
 const bot = new Client();
+const dao = getDao();
 
 // BOT EVENTS
 

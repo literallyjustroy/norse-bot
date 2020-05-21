@@ -3,7 +3,7 @@ import { Command } from '../models/command';
 import { Message } from 'discord.js';
 import { validateArgs } from './validator';
 import messages from './messages.json';
-import { dao } from './database';
+import { getDao } from './database';
 
 export function parseMessage(content: string, keywordString: string): ParsedMessage {
     let args = content.slice(keywordString.length).split(/ +/);
@@ -31,9 +31,9 @@ export function argsToString(args: string[]): string {
 export function generateValidationMessage(command?: Command, message?: Message): string {
     if (command) {
         if (command.validation) {
-            return `${command.validation.message} (Ex: ${dao.getPrefix((message ? message.guild : null))}${command.example})`;
+            return `${command.validation.message} (Ex: ${getDao().getPrefix((message ? message.guild : null))}${command.example})`;
         }
-        return `Invalid usage of ${command.name} (Ex: ${dao.getPrefix((message ? message.guild : null))}${command.example})`;
+        return `Invalid usage of ${command.name} (Ex: ${getDao().getPrefix((message ? message.guild : null))}${command.example})`;
     } else {
         return 'Invalid usage of command';
     }
@@ -49,7 +49,7 @@ function hasPermission(command: Command, message: Message): boolean {
     if (command.permission !== 0) {
         if (message.guild) {
             const user = message.guild.members.cache.get(message.author.id);
-            const adminRole = dao.getAdminRoleId(message.guild);
+            const adminRole = getDao().getAdminRoleId(message.guild);
             if (user && (user.hasPermission('ADMINISTRATOR') || (adminRole && user.roles.cache.has(adminRole)))) {
                 return true;
             }
@@ -77,6 +77,6 @@ export async function executeCommand(command: Command, args: string[], message: 
             await message.channel.send(messages.permissionMessage);
         }
     } else {
-        await message.channel.send(`${messages.unknownMessage} (Try ${dao.getPrefix((message ? message.guild : null))}help)`);
+        await message.channel.send(`${messages.unknownMessage} (Try ${getDao().getPrefix((message ? message.guild : null))}help)`);
     }
 }

@@ -2,7 +2,7 @@ import { Command } from '../models/command';
 import { Message, MessageEmbed } from 'discord.js';
 import { commands } from '../commands';
 import { getCommand } from '../util/parsing';
-import { dao } from '../util/database';
+import { getDao } from '../util/database';
 
 function commandsToNameList(commands: { [key: string]: Command }): string[] {
      return Object.keys(commands);
@@ -53,7 +53,7 @@ export async function help(command: Command, args: string[], message: Message): 
           }
           if (commandForHelp) {
                await message.react('🔍');
-               await message.author.send(generateSingleHelpMessage(commandKey, commandForHelp, dao.getPrefix(message.guild)));
+               await message.author.send(generateSingleHelpMessage(commandKey, commandForHelp, getDao().getPrefix(message.guild)));
                if (message.channel.type !== 'dm') {
                     const response = await message.channel.send(`I messaged you the documentation for **${commandForHelp.name}**`);
                     await response.delete({ timeout: 5000 });
@@ -63,7 +63,7 @@ export async function help(command: Command, args: string[], message: Message): 
           }
      } else { // Help with no arguments
           await message.react('🔍');
-          await message.author.send(generateHelpMessage(dao.getPrefix(message.guild)));
+          await message.author.send(generateHelpMessage(getDao().getPrefix(message.guild)));
           if (message.channel.type !== 'dm') {
                const response = await message.channel.send('I messaged you the help documentation');
                await response.delete({ timeout: 5000 });

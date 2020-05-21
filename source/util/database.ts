@@ -77,4 +77,13 @@ export class Dao {
     }
 }
 
-export const dao = new Dao();
+let dao: Dao | undefined;
+
+export function getDao(): Dao {
+    if (dao) {
+        return dao;
+    } else {
+        dao = new Dao();
+        return dao;
+    }
+}
