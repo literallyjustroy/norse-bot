@@ -1,65 +1,89 @@
-import monk from 'monk';
-import { logger } from './log';
+import { MongoClient, MongoError } from 'mongodb';
+
 import { Client, Guild, Role } from 'discord.js';
 import messages from '../util/messages.json';
 import { GuildMemory } from '../models/guild-memory';
 
-const db = monk(process.env.DB_LOGIN_URL || 'localhost');
-const guilds = db.get('guilds');
-export const logs = db.get('logs');
+export class Dao {
+    public client: MongoClient;
+    private dbName: string;
+    private inMemoryGuilds: { [id: string]: GuildMemory };
 
-const inMemoryGuilds: { [id: string]: GuildMemory } = {};
-
-export async function setNewGuildInMemory(guild: Guild): Promise<void> {
-    const newGuild: GuildMemory = {
-        id: guild.id,
-        name: guild.name,
-        owner: guild.owner?.displayName,
-        prefix: messages.defaultPrefix
-    };
-    inMemoryGuilds[guild.id] = newGuild;
-    await guilds.insert(newGuild);
-}
-
-export async function initializeMemory(bot: Client): Promise<void> {
-    const dbGuildsList: GuildMemory[] = await guilds.find();
-    bot.guilds.cache.forEach(guild => {
-        const dbGuild = dbGuildsList.find(dbGuild => dbGuild.id === guild.id);
-        if (dbGuild) {
-            inMemoryGuilds[guild.id] = dbGuild;
+    constructor() {
+        if (process.env.DB_NAME && process.env.DB_LOGIN_URL) {
+            this.client = new MongoClient(process.env.DB_LOGIN_URL, { useUnifiedTopology: true });
+            this.client.connect((err: MongoError) => {
+                if (err) {
+                    throw err;
+                }
+            });
+            this.dbName = process.env.DB_NAME;
+            this.inMemoryGuilds = {};
         } else {
-            setNewGuildInMemory(guild);
+            console.error('Database variables not defined');
+            process.exit(1);
         }
-    });
-}
-
-export function getPrefix(guild?: Guild | null): string {
-    if (guild && inMemoryGuilds[guild.id]) {
-        return inMemoryGuilds[guild.id].prefix;
     }
-    return messages.defaultPrefix;
-}
 
-export async function setPrefix(guild: Guild, prefix: string): Promise<void> {
-    inMemoryGuilds[guild.id].prefix = prefix;
-    await guilds.update({ id: guild.id }, { $set: { prefix: prefix } });
-    logger.debug({ message: `${guild.name} prefix updated to ${prefix}` });
-}
-
-export function getAdminRoleId(guild?: Guild | null): string | undefined {
-    if (guild) {
-        return inMemoryGuilds[guild.id].adminRoleId;
+    async setNewGuildInMemory(guild: Guild): Promise<void> {
+        const newGuild: GuildMemory = {
+            id: guild.id,
+            name: guild.name,
+            owner: guild.owner?.displayName,
+            prefix: messages.defaultPrefix
+        };
+        this.inMemoryGuilds[guild.id] = newGuild;
+        await this.client.db(this.dbName).collection('guilds').insertOne(newGuild);
     }
-    return undefined;
+
+    async initializeMemory(bot: Client): Promise<void> {
+        const dbGuildsList: GuildMemory[] = await this.client.db(this.dbName).collection('guilds').find({}).toArray();
+        bot.guilds.cache.forEach(guild => {
+            const dbGuild = dbGuildsList.find(dbGuild => dbGuild.id === guild.id);
+            if (dbGuild) {
+                this.inMemoryGuilds[guild.id] = dbGuild;
+            } else {
+                this.setNewGuildInMemory(guild);
+            }
+        });
+    }
+
+    getPrefix(guild?: Guild | null): string {
+        if (guild && this.inMemoryGuilds[guild.id]) {
+            return this.inMemoryGuilds[guild.id].prefix;
+        }
+        return messages.defaultPrefix;
+    }
+
+    async setPrefix(guild: Guild, prefix: string): Promise<void> {
+        this.inMemoryGuilds[guild.id].prefix = prefix;
+        await this.client.db(this.dbName).collection('guilds').updateOne({ id: guild.id }, { $set: { prefix: prefix } });
+    }
+
+    getAdminRoleId(guild?: Guild | null): string | undefined {
+        if (guild) {
+            return this.inMemoryGuilds[guild.id].adminRoleId;
+        }
+        return undefined;
+    }
+
+    async setGuildAdminRole(guild: Guild, role: Role): Promise<void> {
+        this.inMemoryGuilds[guild.id].adminRoleId = role.id;
+        await this.client.db(this.dbName).collection('guilds').updateOne({ id: guild.id }, { $set: { adminRoleId: role.id } });
+    }
+
+    async closeConnection(): Promise<void> {
+        await this.client.close();
+    }
 }
 
-export async function setGuildAdminRole(guild: Guild, role: Role): Promise<void> {
-    inMemoryGuilds[guild.id].adminRoleId = role.id;
-    await guilds.update({ id: guild.id }, { $set: { adminRoleId: role.id } });
-    logger.debug({ message: `${guild.name} admin role updated to ${role.name}` });
-}
+let dao: Dao | undefined;
 
-export async function closeConnection(): Promise<void> {
-    await db.close();
-    logger.debug({ message: 'Database connection closed' });
+export function getDao(): Dao {
+    if (dao) {
+        return dao;
+    } else {
+        dao = new Dao();
+        return dao;
+    }
 }

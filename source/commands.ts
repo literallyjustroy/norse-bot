@@ -26,7 +26,7 @@ export const commands: { [key: string]: Command } = {
         name: 'Set Admin Role',
         aliases: ['admin', 'adminrole'],
         description: 'Sets the given role as a bot controlling role.',
-        example: 'ticket add @Roy [Visual2D]',
+        example: 'setadmin @Moderator',
         validation: {
             type: Validator.STRING,
             min: 1,
@@ -51,7 +51,7 @@ export const commands: { [key: string]: Command } = {
     },
     help: {
         name: 'Help',
-        description: 'Gets the description of all commands (or command specified)',
+        description: 'Gets the description of all commands (or command specified).',
         example: 'help ticket',
         permission: 0,
         execute: help
