@@ -3,27 +3,28 @@ import { logger } from './source/util/log';
 import { commands } from './source/commands';
 import messages from './source/util/messages.json';
 import { executeCommand, getCommand, parseMessage } from './source/util/parsing';
-import { closeConnection, getPrefix, initializeMemory, setNewGuildInMemory } from './source/util/database';
+import { getDao } from './source/util/database';
 
-const bot = new Client();
-
-if (!process.env.BOT_TOKEN || !process.env.DB_LOGIN_URL) {
-    logger.error({ message: 'Environment variables not setup' });
+if (!process.env.BOT_TOKEN) {
+    logger.error({ message: 'Bot token not provided' });
     process.exit(1);
 }
+
+const bot = new Client();
+const dao = getDao();
 
 // BOT EVENTS
 
 bot.on('ready', async () => {
     logger.info('Bot Connected');
-    await initializeMemory(bot);
+    await dao.initializeMemory(bot);
     logger.info('Memory Loaded');
 });
 
 bot.on('message', async (message: Message) => {
     try {
         if (!message.author.bot) { // Don't respond to other bots
-            const prefix = getPrefix(message.guild);
+            const prefix = dao.getPrefix(message.guild);
 
             // Listening for messages starting with the prefix
             if (message.content.startsWith(prefix)) {
@@ -34,29 +35,38 @@ bot.on('message', async (message: Message) => {
             }
         }
     } catch (error) {
-        logger.error({ user: message.author.username, input: message.content, message: JSON.stringify(error) });
+        logger.error({ user: message.author.username, input: message.content, message: error.message });
         await message.channel.send(messages.errorMessage);
     }
 });
 
 bot.on('guildCreate', async (guild: Guild) => {
-    await setNewGuildInMemory(guild);
+    await dao.setNewGuildInMemory(guild);
 });
 
 // BOT START
 
-bot.login(process.env.BOT_TOKEN).then(() =>
-    logger.info('Login Success')
-);
+logger.info('Connecting to database...');
+dao.client.once('open', () => {
+    logger.info('Connected to database');
+    bot.login(process.env.BOT_TOKEN).then(() =>
+        logger.info('Login Success')
+    );
+});
 
 // OTHER EVENTS
 
+async function shutdown(bot: Client): Promise<void> {
+    bot.destroy();
+    await dao.closeConnection();
+    process.exit(0);
+}
+
 // This will handle process.exit():
-process.on('exit', closeConnection);
+process.on('exit', async () => { await shutdown(bot); });
 
 // This will handle kill commands, such as CTRL+C:
-process.on('SIGINT', closeConnection);
-process.on('SIGTERM', closeConnection);
+process.on('SIGINT', async () => { await shutdown(bot); });
 
 // This will prevent dirty exit on code-fault crashes:
-process.on('uncaughtException', closeConnection);
+process.on('uncaughtException', async () => { await shutdown(bot); });
