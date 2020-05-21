@@ -5,7 +5,7 @@
   "main": "bot.ts",
   "dependencies": {
     "discord.js": "^12.2.0",
-    "monk": "^7.3.0",
+    "mongodb": "^3.5.7",
     "node-fetch": "^2.6.0",
     "typescript": "^3.8.3",
     "winston": "^3.2.1"
@@ -13,7 +13,7 @@
   "devDependencies": {
     "@types/chai": "^4.2.11",
     "@types/mocha": "^7.0.2",
-    "@types/monk": "^6.0.0",
+    "@types/mongodb": "^3.5.18",
     "@types/node": "^13.13.5",
     "@types/node-fetch": "^2.5.7",
     "@types/ws": "^7.2.4",

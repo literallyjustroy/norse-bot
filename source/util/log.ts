@@ -1,6 +1,6 @@
 import winston from 'winston';
 import Transport from 'winston-transport';
-import { logs } from './database';
+import { dao } from './database';
 
 const options = {
     console: {
@@ -22,7 +22,7 @@ class MonkTransport extends Transport {
             this.emit('logged', info);
         });
 
-        await logs.insert(info);
+        await dao.client.db('test').collection('logs').insertOne(info);
 
         callback();
     }
