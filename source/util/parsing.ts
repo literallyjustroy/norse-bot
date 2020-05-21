@@ -1,6 +1,6 @@
 import { ParsedMessage } from '../models/parsed-message';
 import { Command } from '../models/command';
-import { Message } from 'discord.js';
+import { Channel, Guild, GuildMember, Message } from 'discord.js';
 import { validateArgs } from './validator';
 import messages from './messages.json';
 import { getDao } from './database';
@@ -37,6 +37,14 @@ export function generateValidationMessage(command?: Command, message?: Message):
     } else {
         return 'Invalid usage of command';
     }
+}
+
+export function getChannelFromArg(arg: string, guild: Guild): Channel | undefined  {
+    const matches = arg.match(/^<#?(\d+)>$/);
+    if (matches) {
+        return guild.channels.cache.get(matches[1]);
+    }
+    return undefined;
 }
 
 export function getCommand(inputCommand: string, commands: { [key: string]: Command }): Command {
