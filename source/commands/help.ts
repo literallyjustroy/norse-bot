@@ -6,8 +6,20 @@ import { getPrefix } from '../util/database';
 
 const BOT_AVATAR = 'https://cdn.discordapp.com/avatars/667552258476736512/c49cb419c5d3c8beb1f3e830341c21cd.png?size=512';
 
-function commandsToNameList(commands: { [key: string]: Command }): string[] {
+function commandsToKeyList(commands: { [key: string]: Command }): string[] {
      return Object.keys(commands);
+}
+
+function commandKeyToPrimaryKey(commandKey: string, commands: { [key: string]: Command }): string {
+     const keyList = commandsToKeyList(commands);
+     const primaryCommandKey = keyList.find(key => {
+          const command = commands[key];
+          return command.aliases && command.aliases.includes(commandKey);
+     });
+     if (primaryCommandKey) {
+          return primaryCommandKey;
+     }
+     return commandKey;
 }
 
 function generateSingleHelpMessage(commandKey: string, command: Command, prefix: string): MessageEmbed {
@@ -26,7 +38,7 @@ function generateSingleHelpMessage(commandKey: string, command: Command, prefix:
      helpMessage.addField('Example', prefix + command.example, true);
 
      if (command.subCommands) {
-          helpMessage.addField('Sub-commands', `**${commandsToNameList(command.subCommands).join(', ')}**`);
+          helpMessage.addField('Sub-commands', `**${commandsToKeyList(command.subCommands).join(', ')}**`);
      }
 
      return helpMessage;
@@ -58,7 +70,7 @@ export async function help(command: Command, args: string[], message: Message): 
           }
           if (commandForHelp) {
                await message.react('🔍');
-               await message.author.send(generateSingleHelpMessage(commandKey, commandForHelp, getPrefix(message.guild)));
+               await message.author.send(generateSingleHelpMessage(commandKeyToPrimaryKey(commandKey, commands), commandForHelp, getPrefix(message.guild)));
                if (message.channel.type !== 'dm') {
                     const response = await message.channel.send(`I messaged you the documentation for **${commandForHelp.name}**`);
                     await response.delete({ timeout: 5000 });

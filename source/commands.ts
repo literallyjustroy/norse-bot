@@ -5,6 +5,7 @@ import { setAdmin } from './commands/setadmin';
 import { updatePrefix } from './commands/prefix';
 import { add, getImage, ping } from './commands/misc';
 import { help } from './commands/help';
+import { say } from './commands/say';
 
 export const commands: { [key: string]: Command } = {
     add: {
@@ -75,6 +76,19 @@ export const commands: { [key: string]: Command } = {
         },
         permission: 2,
         execute: updatePrefix
+    },
+    say: {
+        name: 'Speak in a channel',
+        aliases: ['echo', 'speak'],
+        description: 'Talk through NorseBot in another discord channel',
+        example: 'say #general Howdy I am a moth',
+        validation: {
+            type: Validator.STRING,
+            min: 2,
+            message: 'Must provide a channel and words to say'
+        },
+        permission: 2,
+        execute: say
     },
     ticket: {
         name: 'Tickets',
