@@ -4,6 +4,8 @@ import { commands } from '../commands';
 import { getCommand } from '../util/parsing';
 import { getPrefix } from '../util/database';
 
+const BOT_AVATAR = 'https://cdn.discordapp.com/avatars/667552258476736512/c49cb419c5d3c8beb1f3e830341c21cd.png?size=512';
+
 function commandsToNameList(commands: { [key: string]: Command }): string[] {
      return Object.keys(commands);
 }
@@ -12,8 +14,10 @@ function generateSingleHelpMessage(commandKey: string, command: Command, prefix:
      const helpMessage = new MessageEmbed()
          .setColor('#31449E')
          .setTitle(command.name)
+         .setThumbnail(BOT_AVATAR)
          .setDescription(command.description)
          .addField('Usage', prefix + commandKey);
+
 
      if (command.aliases && command.aliases.length) {
           helpMessage.addField('Aliases', command.aliases.join(', '), true);
@@ -32,7 +36,8 @@ function generateHelpMessage(prefix: string): MessageEmbed {
      const keys: string[] = Object.keys(commands);
      const helpMessage = new MessageEmbed()
          .setColor('#31449E')
-         .setTitle('Commands');
+         .setTitle('Commands')
+         .setThumbnail(BOT_AVATAR);
 
      keys.forEach(key => {
           helpMessage.addField('Name', `**${commands[key].name}**`, true);
