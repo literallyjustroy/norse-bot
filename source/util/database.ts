@@ -4,7 +4,7 @@ import { Client, Guild, Role } from 'discord.js';
 import messages from '../util/messages.json';
 import { GuildMemory } from '../models/guild-memory';
 
-const db = monk(process.env.DB_LOGIN_URL || '');
+const db = monk(process.env.DB_LOGIN_URL || 'localhost');
 const guilds = db.get('guilds');
 export const logs = db.get('logs');
 
