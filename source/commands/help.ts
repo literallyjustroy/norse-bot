@@ -3,6 +3,7 @@ import { Message, MessageEmbed } from 'discord.js';
 import { commands } from '../commands';
 import { getCommand } from '../util/parsing';
 import { getDao } from '../util/database';
+import messages from '../util/messages.json';
 
 const BOT_AVATAR = 'https://cdn.discordapp.com/avatars/667552258476736512/c49cb419c5d3c8beb1f3e830341c21cd.png?size=512';
 
@@ -28,6 +29,7 @@ function generateSingleHelpMessage(commandKey: string, command: Command, prefix:
          .setTitle(command.name)
          .setThumbnail(BOT_AVATAR)
          .setDescription(command.description)
+         .setFooter(`Use "${prefix}help command" for more info on a command.`)
          .addField('Usage', prefix + commandKey);
 
 
@@ -49,11 +51,12 @@ function generateHelpMessage(prefix: string): MessageEmbed {
      const helpMessage = new MessageEmbed()
          .setColor('#31449E')
          .setTitle('Commands')
-         .setThumbnail(BOT_AVATAR);
+         .setThumbnail(BOT_AVATAR)
+         .setFooter(`Use "${messages.defaultPrefix}help command" for more info on a command.`);
 
      keys.forEach(key => {
           helpMessage.addField('Name', `**${commands[key].name}**`, true);
-          helpMessage.addField('Usage', prefix + key, true);
+          helpMessage.addField('Usage', messages.defaultPrefix + key, true);
           helpMessage.addField('Description', commands[key].description, true);
      });
 
@@ -69,17 +72,12 @@ export async function help(command: Command, args: string[], message: Message): 
                commandForHelp = getCommand(commandKey, commandForHelp.subCommands);
           }
           if (commandForHelp) {
-               await message.react('🔍');
-               await message.author.send(generateSingleHelpMessage(commandKeyToPrimaryKey(commandKey, commands), commandForHelp, getDao().getPrefix(message.guild)));
-               if (message.channel.type !== 'dm') {
-                    const response = await message.channel.send(`I messaged you the documentation for **${commandForHelp.name}**`);
-                    await response.delete({ timeout: 5000 });
-               }
+               await message.channel.send(generateSingleHelpMessage(commandKeyToPrimaryKey(commandKey, commands), commandForHelp, getDao().getPrefix(message.guild)));
           } else {
                await message.channel.send('Cannot provide help for unknown command');
           }
      } else { // Help with no arguments
-          await message.react('🔍');
+          await message.react('💬');
           await message.author.send(generateHelpMessage(getDao().getPrefix(message.guild)));
           if (message.channel.type !== 'dm') {
                const response = await message.channel.send('I messaged you the help documentation');
