@@ -9,7 +9,7 @@ export interface Command {
     validation?: ValidationOptions;
     example: string;
     subCommands?: { [key: string]: Command };
-    execute?: (command: Command, nums: any[], message: Message) => Promise<void>;
+    execute?: (command: Command, nums: any[], message: Message) => Promise<void> | void;
 }
 
 interface ValidationOptions {

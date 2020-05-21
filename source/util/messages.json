@@ -1,4 +1,6 @@
 {
+  "defaultPrefix": "!",
+  "permissionMessage": "You do not have permission to access that command",
   "unknownMessage": "Command not recognized",
   "errorMessage": "Uh oh.. An unknown error occurred"
 }
