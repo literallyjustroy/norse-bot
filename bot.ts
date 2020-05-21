@@ -15,6 +15,7 @@ if (!process.env.BOT_TOKEN || !process.env.DB_LOGIN_URL) {
 async function shutdown(bot: Client): Promise<void> {
     bot.destroy();
     await closeConnection();
+    process.exit(0);
 }
 
 // BOT EVENTS
@@ -59,7 +60,7 @@ bot.login(process.env.BOT_TOKEN).then(() =>
 process.on('exit', async () => { await shutdown(bot); });
 
 // This will handle kill commands, such as CTRL+C:
-process.on('SIGTERM', async () => { await shutdown(bot); });
+process.on('SIGINT', async () => { await shutdown(bot); });
 
 // This will prevent dirty exit on code-fault crashes:
 process.on('uncaughtException', async () => { await shutdown(bot); });
