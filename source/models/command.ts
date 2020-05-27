@@ -5,7 +5,8 @@ export interface Command {
     name: string;
     aliases?: string[];
     description: string;
-    permission: number;
+    permission?: number;
+    channelType?: 'server' | 'dm';
     validation?: ValidationOptions;
     example: string;
     subCommands?: { [key: string]: Command };

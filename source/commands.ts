@@ -1,6 +1,6 @@
 import { Command } from './models/command';
 import { Validator } from './util/validator';
-import { addUserToTicket, closeTicket, createTicket, ticketHandler } from './commands/tickets';
+import { addUserToTicket, closeTicket, createTicket, setTicketLogChannel, ticketHandler } from './commands/tickets';
 import { setAdmin } from './commands/setadmin';
 import { updatePrefix } from './commands/prefix';
 import { add, getImage, ping } from './commands/misc';
@@ -19,21 +19,20 @@ export const commands: { [key: string]: Command } = {
             max: 2,
             message: 'Must add 2 numbers'
         },
-        permission: 0,
         execute: add
     },
     setadmin: {
         name: 'Set Admin Role',
         aliases: ['admin', 'adminrole'],
-        description: 'Sets the given role as a bot controlling role.',
+        description: 'Sets the given role as a bot controlling role, or wipes the admin role if no argument is given',
         example: 'setadmin @Moderator',
         validation: {
             type: Validator.STRING,
-            min: 1,
             max: 1,
             message: 'Must provide a single role'
         },
-        permission: 2,
+        permission: 3,
+        channelType: 'server',
         execute: setAdmin
     },
     get: {
@@ -46,21 +45,18 @@ export const commands: { [key: string]: Command } = {
             min: 1,
             message: 'Must provide at least 1 search term'
         },
-        permission: 0,
         execute: getImage
     },
     help: {
         name: 'Help',
         description: 'Gets the description of all commands (or command specified).',
         example: 'help ticket',
-        permission: 0,
         execute: help
     },
     ping: {
         name: 'Ping',
         description: 'Calculates how long it took for a user\'s message to reach the bot.',
         example: 'ping',
-        permission: 0,
         execute: ping
     },
     prefix: {
@@ -75,6 +71,7 @@ export const commands: { [key: string]: Command } = {
             message: 'Must provide a non-spaced, valid prefix'
         },
         permission: 2,
+        channelType: 'server',
         execute: updatePrefix
     },
     say: {
@@ -88,19 +85,20 @@ export const commands: { [key: string]: Command } = {
             message: 'Must provide a channel and words to say'
         },
         permission: 2,
+        channelType: 'server',
         execute: say
     },
     ticket: {
         name: 'Tickets',
         aliases: ['tickets'],
         description: 'Contains ticket commands.',
-        permission: 0,
         example: 'ticket create jeff hit me',
         validation: {
             type: Validator.STRING,
             min: 1,
             message: 'Must provide at least one sub-command'
         },
+        channelType: 'server',
         execute: ticketHandler,
         subCommands: {
             create: {
@@ -108,7 +106,6 @@ export const commands: { [key: string]: Command } = {
                 aliases: ['new', 'open', 'make'],
                 description: 'Creates a ticket with the name given.',
                 example: 'ticket create jeff hit me',
-                permission: 0,
                 execute: createTicket
             },
             close: {
@@ -116,7 +113,6 @@ export const commands: { [key: string]: Command } = {
                 aliases: ['stop', 'cancel', 'remove', 'end', 'finish', 'done'],
                 description: 'Closes the ticket this message was sent in.',
                 example: 'ticket close jeff said it was an accident :)',
-                permission: 0,
                 execute: closeTicket
             },
             add: {
@@ -130,8 +126,20 @@ export const commands: { [key: string]: Command } = {
                     max: 1,
                     message: 'Must provide a single user'
                 },
-                permission: 0,
                 execute: addUserToTicket
+            },
+            log: {
+                name: 'Set Ticket Log Channel',
+                aliases: ['logs', 'setlog', 'setlogs', 'logchannel', 'transcript', 'transcripts'],
+                description: 'Sets the text channel to record ticket logs in, or tells NorseBot to create its own log channel if no argument is given',
+                example: 'ticket log #ticket-transcripts ',
+                validation: {
+                    type: Validator.STRING,
+                    max: 1,
+                    message: 'Must provide a text channel'
+                },
+                permission: 2,
+                execute: setTicketLogChannel
             }
         }
     }

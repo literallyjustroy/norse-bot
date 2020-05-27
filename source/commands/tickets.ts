@@ -12,33 +12,36 @@ import { executeCommand, argsToString, generateValidationMessage, getCommand, st
 import { Command } from '../models/command';
 import { capitalizeFirstLetter } from '../util/util';
 import { getDao } from '../util/database';
+import { logger } from '../util/log';
+import messages from '../util/messages.json';
 
 const TICKET_CATEGORY_NAME = 'Tickets';
 const TICKET_LOG_NAME = 'ticket-logs';
 const TICKET_LOG_TOPIC_TEXT = 'Logs of every ticket closed';
 
 async function getTicketsCategory(guild: Guild): Promise<CategoryChannel> {
-    let ticketsCategory = await guild.channels.cache.find(channel =>
-        channel.type === 'category' && channel.name === TICKET_CATEGORY_NAME
-    ) as CategoryChannel;
-    if (!ticketsCategory) {
-        ticketsCategory = await guild.channels.create(
-            TICKET_CATEGORY_NAME,
-            {
-                type: 'category',
-                permissionOverwrites: [
-                    {
-                        id: guild.id,
-                        deny: ['VIEW_CHANNEL'],
-                    }
-                ]
-            }
-        );
+    const ticketLogId = getDao().getTicketLogId(guild);
+    if (ticketLogId) {
+        const ticketLogChannel = guild.channels.cache.get(ticketLogId);
+        if (ticketLogChannel && ticketLogChannel.parent) {
+            return ticketLogChannel.parent;
+        }
     }
-    return ticketsCategory;
+    return await guild.channels.create(
+        TICKET_CATEGORY_NAME,
+        {
+            type: 'category',
+            permissionOverwrites: [
+                {
+                    id: guild.id,
+                    deny: ['VIEW_CHANNEL'],
+                }
+            ]
+        }
+    );
 }
 
-async function createTicketTextChannel(ticketName: string, category: CategoryChannel, message: Message, guild: Guild): Promise<TextChannel> {
+async function createTicketTextChannel(ticketName: string, category: CategoryChannel | undefined, message: Message, guild: Guild): Promise<TextChannel> {
     const textChannel = await guild.channels.create(
             ticketName,
             {
@@ -51,6 +54,31 @@ async function createTicketTextChannel(ticketName: string, category: CategoryCha
     return textChannel;
 }
 
+async function getTicketLogChannel(category: CategoryChannel, guild: Guild): Promise<TextChannel> {
+    const ticketLogId = getDao().getTicketLogId(guild);
+    if (ticketLogId) {
+        const logChannelFromDao = guild.channels.cache.get(ticketLogId) as TextChannel;
+        if (logChannelFromDao) {
+            if (logChannelFromDao.parent !== category) {
+                await logChannelFromDao.setParent(category);
+            }
+            return logChannelFromDao;
+        }
+    }
+    const ticketLogChannel = await guild.channels.create(
+        TICKET_LOG_NAME,
+        {
+            type: 'text',
+            topic: TICKET_LOG_TOPIC_TEXT,
+            position: 0,
+            parent: category,
+        }
+    );
+    await getDao().setTicketLogId(guild, ticketLogChannel.id);
+    await ticketLogChannel.lockPermissions(); // Sync with category permissions
+    return ticketLogChannel;
+}
+
 export async function createTicket(command: Command, args: string[], message: Message): Promise<void> {
     let ticketName: string;
     if (args[0]) {
@@ -61,6 +89,7 @@ export async function createTicket(command: Command, args: string[], message: Me
     const guild = message.guild as Guild;
     if (ticketName && ticketName.length && ticketName.length <= 100 && stringToName(ticketName) !== stringToName(TICKET_LOG_NAME)) {
         const category = await getTicketsCategory(guild);
+        await getTicketLogChannel(category, guild);
         const ticketChannel = await createTicketTextChannel(ticketName, category, message, guild);
 
         const botResponse = await message.channel.send(`Ticket opened: <#${ticketChannel.id}>`);
@@ -77,37 +106,27 @@ export async function createTicket(command: Command, args: string[], message: Me
 
         await ticketChannel.send(`Ticket opened by <@!${message.author.id}>`, ticketIntroMessage);
 
-        await botResponse.delete({ timeout: 15000 });
-        await message.delete({ timeout: 15000 });
+        try {
+            await botResponse.delete({ timeout: 15000 });
+            await message.delete();
+        } catch {
+            logger.debug(messages.deleteError);
+        }
     } else {
         await message.channel.send(generateValidationMessage(command));
     }
 }
 
 async function isTicketChannel(channel: TextChannel | DMChannel | NewsChannel): Promise<boolean> {
-    return channel.type === 'text' &&
-        channel.parent !== null &&
-        channel.parent.name === TICKET_CATEGORY_NAME &&
-        channel.name !== TICKET_LOG_NAME;
-}
+    if (channel.type !== 'text')
+        return false;
+    const ticketLogId = getDao().getTicketLogId(channel.guild);
+    return ticketLogId !== undefined &&                                 // The guild HAS a ticket log channel
+        channel.id !== ticketLogId &&                                   // This channel ISN'T the ticket log channel
+        channel.parent !== null &&                                      // The channel has a parent
+        channel.parent.type === 'category' &&                           // The parent IS a category
+        channel.parent.children.get(ticketLogId) !== undefined;         // The parent category CONTAINS the ticket log channel
 
-async function getTicketLogChannel(category: CategoryChannel, guild: Guild): Promise<TextChannel> {
-    let ticketLogChannel = await guild.channels.cache.find(channel =>
-        channel.parent === category && channel.type === 'text' && channel.name === TICKET_LOG_NAME
-    ) as TextChannel;
-    if (!ticketLogChannel) {
-        ticketLogChannel = await guild.channels.create(
-            TICKET_LOG_NAME,
-            {
-                type: 'text',
-                topic: TICKET_LOG_TOPIC_TEXT,
-                position: 0,
-                parent: category,
-            }
-        );
-        await ticketLogChannel.lockPermissions(); // Sync with category permissions
-    }
-    return ticketLogChannel;
 }
 
 async function channelToText(channel: TextChannel | DMChannel | NewsChannel): Promise<Buffer> {
@@ -145,7 +164,11 @@ export async function closeTicket(command: Command, args: string[], message: Mes
             user.send(closeMessage, attachment);
         });
 
-        await ticketChannel.delete();
+        try {
+            await ticketChannel.delete();
+        } catch {
+            logger.debug(messages.deleteError);
+        }
     } else {
         await message.channel.send('Can only close Ticket channels');
     }
@@ -168,15 +191,31 @@ export async function addUserToTicket(command: Command, args: string[], message:
     }
 }
 
-export async function ticketHandler(command: Command, args: string[], message: Message): Promise<void> {
-    if (message.guild && command.subCommands) {
-        const subCommand = getCommand(args[0].toLowerCase(), command.subCommands);
-        if (subCommand) {
-            await executeCommand(subCommand, [argsToString(args)], message);
+export async function setTicketLogChannel(command: Command, args: string[], message: Message): Promise<void> {
+    const channel = message.mentions.channels?.first();
+    if (channel) {
+
+        if (channel.type === 'text' && message.guild) {
+            if (channel.parent && channel.parent.type === 'category') {
+                await getDao().setTicketLogId(message.guild, channel.id);
+                await message.channel.send(`<#${channel.id}> set as ticket log channel`);
+            } else {
+                await message.channel.send('Ticket logs channel must have a parent category');
+            }
         } else {
-            await message.channel.send(`Invalid ticket sub-command (try ${getDao().getPrefix(message.guild)}help ticket)`);
+            await message.channel.send('Must mention a valid server text channel');
         }
     } else {
-        await message.channel.send('Ticket commands must be sent in a server text channel');
+        await getDao().setTicketLogId(message.guild as Guild, undefined);
+        await message.channel.send('NorseBot\'s ticket log channel has been unset');
+    }
+}
+
+export async function ticketHandler(command: Command, args: string[], message: Message): Promise<void> {
+    const subCommand = getCommand(args[0].toLowerCase(), command.subCommands!);
+    if (subCommand) {
+        await executeCommand(subCommand, [argsToString(args)], message);
+    } else {
+        await message.channel.send(`Invalid ticket sub-command (try ${getDao().getPrefix(message.guild)}help ticket)`);
     }
 }
