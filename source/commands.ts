@@ -131,7 +131,7 @@ export const commands: { [key: string]: Command } = {
             log: {
                 name: 'Set Ticket Log Channel',
                 aliases: ['logs', 'setlog', 'setlogs', 'logchannel', 'transcript', 'transcripts'],
-                description: 'Sets the text channel to record ticket logs in, or tells NorseBot to create its own log channel if no argument is given',
+                description: 'Sets the text channel to record ticket logs in, or unsets the channel if no argument is given',
                 example: 'ticket log #ticket-transcripts ',
                 validation: {
                     type: Validator.STRING,
