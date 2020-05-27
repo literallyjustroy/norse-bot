@@ -13,7 +13,7 @@ import { Command } from '../models/command';
 import { capitalizeFirstLetter } from '../util/util';
 import { getDao } from '../util/database';
 
-const TICKET_CATEGORY_NAME = 'Tickets';
+const TICKET_CATEGORY_NAME = '──┤🎫 Tickets 🎫├──';
 const TICKET_LOG_NAME = 'ticket-logs';
 const TICKET_LOG_TOPIC_TEXT = 'Logs of every ticket closed';
 
