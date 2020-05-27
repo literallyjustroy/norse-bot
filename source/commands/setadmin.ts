@@ -3,16 +3,17 @@ import { Message } from 'discord.js';
 import { getDao } from '../util/database';
 
 export async function setAdmin(command: Command, args: string[], message: Message): Promise<void> {
-    if(message.guild) {
+    if (args.length) {
         const adminRole = message.mentions.roles?.first();
 
         if (adminRole) {
-            await getDao().setGuildAdminRole(message.guild, adminRole);
-            await message.channel.send(`Set admin role as <@&${adminRole.id}>`);
+            await getDao().setAdminRoleId(message.guild!, adminRole.id);
+            await message.channel.send(`Set Norse Bot's admin role as <@&${adminRole.id}>`);
         } else {
-            await message.channel.send(`Invalid mention. Must @ROLE. (Ex: ${getDao().getPrefix(message.guild)}setadmin @Moderator)`);
+            await message.channel.send(`Invalid mention. Must @ROLE. (Ex: ${getDao().getPrefix(message.guild!)}setadmin @Moderator)`);
         }
     } else {
-        await message.channel.send('Admin Role can only be set in Server text channels');
+        await getDao().setAdminRoleId(message.guild!, undefined);
+        await message.channel.send('Norse Bot\'s admin role has been wiped');
     }
 }

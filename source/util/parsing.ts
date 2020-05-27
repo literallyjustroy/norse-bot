@@ -54,11 +54,11 @@ export function getCommand(inputCommand: string, commands: { [key: string]: Comm
 }
 
 function hasPermission(command: Command, message: Message): boolean {
-    if (command.permission !== 0) {
+    if (command.permission) {
         if (message.guild) {
             const user = message.guild.members.cache.get(message.author.id);
             const adminRole = getDao().getAdminRoleId(message.guild);
-            if (user && (user.hasPermission('ADMINISTRATOR') || (adminRole && user.roles.cache.has(adminRole)))) {
+            if (user && (user.hasPermission('ADMINISTRATOR') || (command.permission < 3 && adminRole && user.roles.cache.has(adminRole)))) {
                 return true;
             }
         }
@@ -70,19 +70,23 @@ function hasPermission(command: Command, message: Message): boolean {
 
 export async function executeCommand(command: Command, args: string[], message: Message): Promise<void> {
     if (command && command.execute) {
-        if (hasPermission(command, message)) {
-            if (command.validation) {
-                const validArgs = validateArgs(args, command.validation.type, command.validation.min, command.validation.max);
-                if (validArgs) {
-                    await command.execute(command, validArgs, message);
+        if (!command.channelType || (command.channelType === 'server' && message.guild)) {
+            if (hasPermission(command, message)) {
+                if (command.validation) {
+                    const validArgs = validateArgs(args, command.validation.type, command.validation.min, command.validation.max);
+                    if (validArgs) {
+                        await command.execute(command, validArgs, message);
+                    } else {
+                        await message.channel.send(generateValidationMessage(command));
+                    }
                 } else {
-                    await message.channel.send(generateValidationMessage(command));
+                    await command.execute(command, args, message);
                 }
             } else {
-                await command.execute(command, args, message);
+                await message.channel.send(messages.permissionMessage);
             }
         } else {
-            await message.channel.send(messages.permissionMessage);
+            await message.channel.send(messages.serverCommandType);
         }
     } else if (message.channel.type === 'dm'){
         await message.channel.send(`${messages.unknownMessage} (Try ${getDao().getPrefix(message.guild)}help)`);

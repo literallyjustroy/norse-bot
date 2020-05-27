@@ -4,6 +4,7 @@ import { commands } from '../commands';
 import { getCommand } from '../util/parsing';
 import { getDao } from '../util/database';
 import messages from '../util/messages.json';
+import { logger } from '../util/log';
 
 const BOT_AVATAR = 'https://cdn.discordapp.com/avatars/667552258476736512/c49cb419c5d3c8beb1f3e830341c21cd.png?size=512';
 
@@ -81,7 +82,11 @@ export async function help(command: Command, args: string[], message: Message): 
           await message.author.send(generateHelpMessage(getDao().getPrefix(message.guild)));
           if (message.channel.type !== 'dm') {
                const response = await message.channel.send('I messaged you the help documentation');
-               await response.delete({ timeout: 5000 });
+               try {
+                    await response.delete({ timeout: 5000 });
+               } catch {
+                    logger.debug(messages.deleteError);
+               }
           }
      }
 }

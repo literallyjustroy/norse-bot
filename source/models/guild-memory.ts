@@ -4,4 +4,5 @@ export interface GuildMemory {
     owner?: string;
     prefix: string;
     adminRoleId?: string;
+    ticketLogId?: string;
 }

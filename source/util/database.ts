@@ -1,4 +1,4 @@
-import { MongoClient, MongoError } from 'mongodb';
+import { Collection, MongoClient, MongoError } from 'mongodb';
 
 import { Client, Guild, Role } from 'discord.js';
 import messages from '../util/messages.json';
@@ -24,6 +24,10 @@ export class Dao {
             process.exit(1);
         }
     }
+    
+    private getCollection(collectionName: string): Collection<any> {
+        return this.client.db(this.dbName).collection(collectionName);
+    }
 
     async setNewGuildInMemory(guild: Guild): Promise<void> {
         const newGuild: GuildMemory = {
@@ -33,11 +37,11 @@ export class Dao {
             prefix: messages.defaultPrefix
         };
         this.inMemoryGuilds[guild.id] = newGuild;
-        await this.client.db(this.dbName).collection('guilds').insertOne(newGuild);
+        await this.getCollection('guilds').insertOne(newGuild);
     }
 
     async initializeMemory(bot: Client): Promise<void> {
-        const dbGuildsList: GuildMemory[] = await this.client.db(this.dbName).collection('guilds').find({}).toArray();
+        const dbGuildsList: GuildMemory[] = await this.getCollection('guilds').find({}).toArray();
         bot.guilds.cache.forEach(guild => {
             const dbGuild = dbGuildsList.find(dbGuild => dbGuild.id === guild.id);
             if (dbGuild) {
@@ -57,7 +61,7 @@ export class Dao {
 
     async setPrefix(guild: Guild, prefix: string): Promise<void> {
         this.inMemoryGuilds[guild.id].prefix = prefix;
-        await this.client.db(this.dbName).collection('guilds').updateOne({ id: guild.id }, { $set: { prefix: prefix } });
+        await this.getCollection('guilds').updateOne({ id: guild.id }, { $set: { prefix: prefix } });
     }
 
     getAdminRoleId(guild?: Guild | null): string | undefined {
@@ -67,11 +71,19 @@ export class Dao {
         return undefined;
     }
 
-    async setGuildAdminRole(guild: Guild, role: Role): Promise<void> {
-        this.inMemoryGuilds[guild.id].adminRoleId = role.id;
-        await this.client.db(this.dbName).collection('guilds').updateOne({ id: guild.id }, { $set: { adminRoleId: role.id } });
+    async setAdminRoleId(guild: Guild, roleId: string | undefined): Promise<void> {
+        this.inMemoryGuilds[guild.id].adminRoleId = roleId;
+        await this.getCollection('guilds').updateOne({ id: guild.id }, { $set: { adminRoleId: roleId } });
     }
 
+    getTicketLogId(guild: Guild): string | undefined {
+        return this.inMemoryGuilds[guild.id].ticketLogId;
+    }
+
+    async setTicketLogId(guild: Guild, ticketLogId: string | undefined): Promise<void> {
+        this.inMemoryGuilds[guild.id].ticketLogId = ticketLogId;
+        await this.getCollection('guilds').updateOne({ id: guild.id }, { $set: { ticketLogId: ticketLogId } });
+    }
     async closeConnection(): Promise<void> {
         await this.client.close();
     }

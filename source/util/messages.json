@@ -2,5 +2,7 @@
   "defaultPrefix": "!",
   "permissionMessage": "You do not have permission to access that command here",
   "unknownMessage": "Command not recognized",
-  "errorMessage": "Uh oh.. An unknown error occurred"
+  "errorMessage": "Uh oh.. An unknown error occurred",
+  "deleteError": "Attempt to delete already deleted object",
+  "serverCommandType": "That command is only allowed in servers"
 }
