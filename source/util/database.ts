@@ -92,10 +92,8 @@ export class Dao {
 let dao: Dao | undefined;
 
 export function getDao(): Dao {
-    if (dao) {
-        return dao;
-    } else {
+    if (!dao) {
         dao = new Dao();
-        return dao;
     }
+    return dao;
 }
