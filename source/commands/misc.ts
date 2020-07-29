@@ -1,7 +1,7 @@
 import { FlickrResponse } from '../models/flickr-response';
 import fetch from 'node-fetch';
 import { Command } from '../models/command';
-import { Message } from "discord.js";
+import { Message } from 'discord.js';
 
 /**
  * Calculates how long it took for a user's message to reach the bot (starting from when the user sent the message)

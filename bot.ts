@@ -1,9 +1,10 @@
-import { Client, Guild, Message } from 'discord.js';
+import { Client, Message } from 'discord.js';
 import { logger } from './source/util/log';
 import { commands } from './source/commands';
 import messages from './source/util/messages.json';
 import { executeCommand, getCommand, parseMessage } from './source/util/parsing';
 import { getDao } from './source/util/database';
+import { presenceUpdate } from './source/commands/presence-integration';
 
 if (!process.env.BOT_TOKEN) {
     logger.error({ message: 'Bot token not provided' });
@@ -40,9 +41,9 @@ bot.on('message', async (message: Message) => {
     }
 });
 
-bot.on('guildCreate', async (guild: Guild) => {
-    await dao.setNewGuildInMemory(guild);
-});
+bot.on('presenceUpdate', presenceUpdate);
+
+bot.on('guildCreate', dao.setNewGuildInMemory);
 
 // BOT START
 

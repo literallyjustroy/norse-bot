@@ -10,7 +10,7 @@ export async function setAdmin(command: Command, args: string[], message: Messag
             await getDao().setAdminRoleId(message.guild!, adminRole.id);
             await message.channel.send(`Set Norse Bot's admin role as <@&${adminRole.id}>`);
         } else {
-            await message.channel.send(`Invalid mention. Must @ROLE. (Ex: ${getDao().getPrefix(message.guild!)}setadmin @Moderator)`);
+            await message.channel.send(`Invalid mention. Must @ROLE. (Ex: ${getDao().getPrefix(message.guild!)}${command.example})`);
         }
     } else {
         await getDao().setAdminRoleId(message.guild!, undefined);

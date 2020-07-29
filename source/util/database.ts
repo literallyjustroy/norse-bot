@@ -76,6 +76,18 @@ export class Dao {
         await this.getCollection('guilds').updateOne({ id: guild.id }, { $set: { adminRoleId: roleId } });
     }
 
+    getStreamRoleId(guild?: Guild | null): string | undefined {
+        if (guild) {
+            return this.inMemoryGuilds[guild.id].streamRoleId;
+        }
+        return undefined;
+    }
+
+    async setStreamRoleId(guild: Guild, roleId: string | undefined): Promise<void> {
+        this.inMemoryGuilds[guild.id].streamRoleId = roleId;
+        await this.getCollection('guilds').updateOne({ id: guild.id }, { $set: { streamRoleId: roleId } });
+    }
+
     getTicketLogId(guild: Guild): string | undefined {
         return this.inMemoryGuilds[guild.id].ticketLogId;
     }
@@ -84,6 +96,16 @@ export class Dao {
         this.inMemoryGuilds[guild.id].ticketLogId = ticketLogId;
         await this.getCollection('guilds').updateOne({ id: guild.id }, { $set: { ticketLogId: ticketLogId } });
     }
+
+    getStreamChannelId(guild: Guild): string | undefined {
+        return this.inMemoryGuilds[guild.id].streamChannelId;
+    }
+
+    async setStreamChannelId(guild: Guild, streamChannelId: string | undefined): Promise<void> {
+        this.inMemoryGuilds[guild.id].streamChannelId = streamChannelId;
+        await this.getCollection('guilds').updateOne({ id: guild.id }, { $set: { streamChannelId: streamChannelId } });
+    }
+
     async closeConnection(): Promise<void> {
         await this.client.close();
     }
@@ -92,10 +114,8 @@ export class Dao {
 let dao: Dao | undefined;
 
 export function getDao(): Dao {
-    if (dao) {
-        return dao;
-    } else {
+    if (!dao) {
         dao = new Dao();
-        return dao;
     }
+    return dao;
 }

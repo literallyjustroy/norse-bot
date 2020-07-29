@@ -1,10 +1,15 @@
 import { ParsedMessage } from '../models/parsed-message';
 import { Command } from '../models/command';
-import { Channel, Guild, GuildMember, Message } from 'discord.js';
+import { Channel, Guild, Message } from 'discord.js';
 import { validateArgs } from './validator';
 import messages from './messages.json';
 import { getDao } from './database';
 
+/**
+ * Separates a string into a command and its arguments
+ * @param content The input string
+ * @param keywordString The prefix at the start of the string
+ */
 export function parseMessage(content: string, keywordString: string): ParsedMessage {
     let args = content.slice(keywordString.length).split(/ +/);
     let cmd = args.shift();
@@ -20,10 +25,17 @@ export function parseMessage(content: string, keywordString: string): ParsedMess
     return { cmd: cmd, args: args };
 }
 
+/**
+ * Removes all special characters from a string
+ */
 export function stringToName(input: string): string {
     return input.toLowerCase().replace(/[^a-zA-Z0-9]/g, '');
 }
 
+/**
+ * Combines an array of stings with spaces
+ * @param args
+ */
 export function argsToString(args: string[]): string {
     return args.slice(1, args.length + 1).join(' ');
 }
@@ -68,6 +80,9 @@ function hasPermission(command: Command, message: Message): boolean {
     }
 }
 
+/**
+ * Ensures user has access to command, validates arguments, and executes the command
+ */
 export async function executeCommand(command: Command, args: string[], message: Message): Promise<void> {
     if (command && command.execute) {
         if (!command.channelType || (command.channelType === 'server' && message.guild)) {

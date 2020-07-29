@@ -47,21 +47,33 @@ function generateSingleHelpMessage(commandKey: string, command: Command, prefix:
      return helpMessage;
 }
 
-function generateHelpMessage(prefix: string): MessageEmbed {
+function getHelpMessageTemplate(): MessageEmbed {
+     return new MessageEmbed().setColor('#31449E');
+}
+
+function generateHelpMessage(prefix: string): MessageEmbed[] {
      const keys: string[] = Object.keys(commands);
-     const helpMessage = new MessageEmbed()
-         .setColor('#31449E')
-         .setTitle('Commands')
+     let helpMessage = getHelpMessageTemplate()
          .setThumbnail(BOT_AVATAR)
-         .setFooter(`Use "${messages.defaultPrefix}help command" for more info on a command.`);
+         .setTitle('Commands');
+     let index = 1;
+     const embeds: MessageEmbed[] = [];
 
      keys.forEach(key => {
+          if (index % 6 === 0) {
+               embeds.push(helpMessage);
+               helpMessage = getHelpMessageTemplate();
+          }
           helpMessage.addField('Name', `**${commands[key].name}**`, true);
           helpMessage.addField('Usage', messages.defaultPrefix + key, true);
           helpMessage.addField('Description', commands[key].description, true);
+          index += 1;
      });
 
-     return helpMessage;
+     helpMessage.setFooter(`Use "${messages.defaultPrefix}help command" for more info on a command.`);
+     embeds.push(helpMessage);
+
+     return embeds;
 }
 
 export async function help(command: Command, args: string[], message: Message): Promise<void> {
@@ -79,7 +91,9 @@ export async function help(command: Command, args: string[], message: Message): 
           }
      } else { // Help with no arguments
           await message.react('💬');
-          await message.author.send(generateHelpMessage(getDao().getPrefix(message.guild)));
+          for (const embed of generateHelpMessage(getDao().getPrefix(message.guild))) {
+               await message.author.send(embed);
+          }
           if (message.channel.type !== 'dm') {
                const response = await message.channel.send('I messaged you the help documentation');
                try {
