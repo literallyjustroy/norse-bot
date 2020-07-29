@@ -6,6 +6,7 @@ import { updatePrefix } from './commands/prefix';
 import { add, getImage, ping } from './commands/misc';
 import { help } from './commands/help';
 import { say } from './commands/say';
+import { setStreamChannel, setStreamRole, streamHandler } from './commands/presence-integration';
 
 export const commands: { [key: string]: Command } = {
     add: {
@@ -132,14 +133,55 @@ export const commands: { [key: string]: Command } = {
                 name: 'Set Ticket Log Channel',
                 aliases: ['logs', 'setlog', 'setlogs', 'logchannel', 'transcript', 'transcripts'],
                 description: 'Sets the text channel to record ticket logs in, or unsets the channel if no argument is given.',
-                example: 'ticket log #ticket-transcripts ',
+                example: 'ticket log #ticket-transcripts',
                 validation: {
                     type: Validator.STRING,
                     max: 1,
-                    message: 'Must provide a text channel'
+                    message: 'Must provide one text channel'
                 },
                 permission: 2,
                 execute: setTicketLogChannel
+            }
+        }
+    },
+    stream: {
+        name: 'Streams',
+        aliases: ['streams'],
+        description: 'Contains streaming notification commands',
+        example: 'stream channel #stream-notifications',
+        validation: {
+            type: Validator.STRING,
+            min: 1,
+            message: 'Must provide at least one sub-command'
+        },
+        channelType: 'server',
+        execute: streamHandler,
+        subCommands: {
+            channel: {
+                name: 'Set Stream Notification Channel',
+                aliases: ['set', 'setchannel'],
+                description: 'Sets the text channel to post streaming notifications in, or unsets the channel if no argument is given.',
+                example: 'stream channel #streaming-notifications',
+                validation: {
+                    type: Validator.STRING,
+                    max: 1,
+                    message: 'Must provide one text channel'
+                },
+                permission: 2,
+                execute: setStreamChannel
+            },
+            role: {
+                name: 'Set Streamer Role',
+                aliases: ['setrole', 'streamer'],
+                description: 'Sets the given role that will be watched to post when they go live, or unsets the streamer role if no argument is given',
+                example: 'role @Streamer',
+                validation: {
+                    type: Validator.STRING,
+                    max: 1,
+                    message: 'Must provide a single role'
+                },
+                permission: 2,
+                execute: setStreamRole
             }
         }
     }

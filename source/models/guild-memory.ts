@@ -5,4 +5,6 @@ export interface GuildMemory {
     prefix: string;
     adminRoleId?: string;
     ticketLogId?: string;
+    streamChannelId?: string;
+    streamRoleId?: string;
 }

@@ -194,7 +194,6 @@ export async function addUserToTicket(command: Command, args: string[], message:
 export async function setTicketLogChannel(command: Command, args: string[], message: Message): Promise<void> {
     const channel = message.mentions.channels?.first();
     if (channel) {
-
         if (channel.type === 'text' && message.guild) {
             if (channel.parent && channel.parent.type === 'category') {
                 await getDao().setTicketLogId(message.guild, channel.id);
@@ -206,7 +205,7 @@ export async function setTicketLogChannel(command: Command, args: string[], mess
             await message.channel.send('Must mention a valid server text channel');
         }
     } else {
-        await getDao().setTicketLogId(message.guild as Guild, undefined);
+        await getDao().setTicketLogId(message.guild!, undefined);
         await message.channel.send('NorseBot\'s ticket log channel has been unset');
     }
 }
