@@ -153,12 +153,3 @@ export async function presenceUpdate(oldPresence: Presence | undefined, newPrese
         }
     }
 }
-
-export async function streamHandler(command: Command, args: string[], message: Message): Promise<void> {
-    const subCommand = getCommand(args[0].toLowerCase(), command.subCommands!);
-    if (subCommand) {
-        await executeCommand(subCommand, [argsToString(args)], message);
-    } else {
-        await message.channel.send(`Invalid stream sub-command (try ${getDao().getPrefix(message.guild)}help stream)`);
-    }
-}

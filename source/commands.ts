@@ -1,12 +1,14 @@
 import { Command } from './models/command';
 import { Validator } from './util/validator';
-import { addUserToTicket, closeTicket, createTicket, setTicketLogChannel, ticketHandler } from './commands/tickets';
+import { addUserToTicket, closeTicket, createTicket, setTicketLogChannel } from './commands/tickets';
 import { setAdmin } from './commands/setadmin';
 import { updatePrefix } from './commands/prefix';
 import { add, getImage, ping } from './commands/misc';
 import { help } from './commands/help';
 import { say } from './commands/say';
-import { setStreamChannel, setStreamRole, streamHandler } from './commands/presence-integration';
+import { setStreamChannel, setStreamRole } from './commands/presence-integration';
+import { createApplication, newApplyMessage } from './commands/applications';
+import { subCommandHandler } from './util/parsing';
 
 export const commands: { [key: string]: Command } = {
     add: {
@@ -100,7 +102,7 @@ export const commands: { [key: string]: Command } = {
             message: 'Must provide at least one sub-command'
         },
         channelType: 'server',
-        execute: ticketHandler,
+        execute: subCommandHandler,
         subCommands: {
             create: {
                 name: 'Create Ticket',
@@ -155,7 +157,7 @@ export const commands: { [key: string]: Command } = {
             message: 'Must provide at least one sub-command'
         },
         channelType: 'server',
-        execute: streamHandler,
+        execute: subCommandHandler,
         subCommands: {
             channel: {
                 name: 'Set Stream Notification Channel',
@@ -182,6 +184,55 @@ export const commands: { [key: string]: Command } = {
                 },
                 permission: 2,
                 execute: setStreamRole
+            }
+        }
+    },
+    app: {
+        name: 'Applications',
+        aliases: ['apps', 'application', 'applications'],
+        description: 'Contains role application commands',
+        example: 'app create',
+        validation: {
+            type: Validator.STRING,
+            min: 1,
+            message: 'Must provide at least one sub-command'
+        },
+        channelType: 'server',
+        execute: subCommandHandler,
+        subCommands: {
+            applychannel: {
+                name: 'Create new NorseBot app. message',
+                aliases: ['newapply', 'setapply'],
+                description: 'Sets the text channel to post the bot\'s application message (where people apply), or unsets the channel if no argument is given.',
+                example: 'app applychannel #new-student-apps',
+                validation: {
+                    type: Validator.STRING,
+                    max: 1,
+                    message: 'Must provide one text channel'
+                },
+                permission: 2,
+                execute: newApplyMessage
+            },
+            reviewchannel: {
+                name: 'Set app. review channel',
+                aliases: ['review', 'reviews', 'setreview', 'logchannel'],
+                description: 'Sets the text channel to post user\'s finished apps for review, or unsets the channel if no argument is given.',
+                example: 'app reviewchannel #application-logs',
+                validation: {
+                    type: Validator.STRING,
+                    max: 1,
+                    message: 'Must provide one text channel'
+                },
+                permission: 2,
+                execute: setStreamChannel // TODO: CHANGE
+            },
+            create: {
+                name: 'Create New Application',
+                aliases: ['new'],
+                description: 'Starts the process to create a new Application for an @role',
+                example: 'app create',
+                permission: 2,
+                execute: createApplication // TODO: CHANGE
             }
         }
     }

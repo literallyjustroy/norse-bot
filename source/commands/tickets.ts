@@ -209,12 +209,3 @@ export async function setTicketLogChannel(command: Command, args: string[], mess
         await message.channel.send('NorseBot\'s ticket log channel has been unset');
     }
 }
-
-export async function ticketHandler(command: Command, args: string[], message: Message): Promise<void> {
-    const subCommand = getCommand(args[0].toLowerCase(), command.subCommands!);
-    if (subCommand) {
-        await executeCommand(subCommand, [argsToString(args)], message);
-    } else {
-        await message.channel.send(`Invalid ticket sub-command (try ${getDao().getPrefix(message.guild)}help ticket)`);
-    }
-}

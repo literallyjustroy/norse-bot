@@ -106,6 +106,33 @@ export class Dao {
         await this.getCollection('guilds').updateOne({ id: guild.id }, { $set: { streamChannelId: streamChannelId } });
     }
 
+    getApplyChannelId(guild: Guild): string | undefined {
+        return this.inMemoryGuilds[guild.id].applyChannelId;
+    }
+
+    async setApplyChannelId(guild: Guild, applyChannelId: string | undefined): Promise<void> {
+        this.inMemoryGuilds[guild.id].applyChannelId = applyChannelId;
+        await this.getCollection('guilds').updateOne({ id: guild.id }, { $set: { applyChannelId: applyChannelId } });
+    }
+
+    getReviewChannelId(guild: Guild): string | undefined {
+        return this.inMemoryGuilds[guild.id].reviewChannelId;
+    }
+
+    async setReviewChannelId(guild: Guild, reviewChannelId: string | undefined): Promise<void> {
+        this.inMemoryGuilds[guild.id].reviewChannelId = reviewChannelId;
+        await this.getCollection('guilds').updateOne({ id: guild.id }, { $set: { reviewChannelId: reviewChannelId } });
+    }
+
+    getApplyMessageId(guild: Guild): string | undefined {
+        return this.inMemoryGuilds[guild.id].applyMessageId;
+    }
+
+    async setApplyMessageId(guild: Guild, applyMessageId: string | undefined): Promise<void> {
+        this.inMemoryGuilds[guild.id].applyMessageId = applyMessageId;
+        await this.getCollection('guilds').updateOne({ id: guild.id }, { $set: { applyMessageId: applyMessageId } });
+    }
+
     async closeConnection(): Promise<void> {
         await this.client.close();
     }
