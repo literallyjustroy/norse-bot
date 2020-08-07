@@ -22,7 +22,7 @@ class MonkTransport extends Transport {
             this.emit('logged', info);
         });
 
-        await getDao().client.db('test').collection('logs').insertOne(info);
+        await getDao().log(info);
 
         callback();
     }
@@ -40,6 +40,6 @@ export const logger = winston.createLogger({
     transports: [
         new winston.transports.Console(options.console),
         new MonkTransport({ level: 'error' }),
-        new winston.transports.File({ filename: 'logs/error.log', level: 'error' })
+        new winston.transports.File({ filename: 'logs/logs.log' })
     ]
 });

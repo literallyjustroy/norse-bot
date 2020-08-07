@@ -7,18 +7,18 @@ import { GuildMemory } from '../models/guild-memory';
 export class Dao {
     public client: MongoClient;
     private dbName: string;
-    private inMemoryGuilds: { [id: string]: GuildMemory };
+    private readonly inMemoryGuilds: { [id: string]: GuildMemory };
 
     constructor() {
         if (process.env.DB_NAME && process.env.DB_LOGIN_URL) {
+            this.dbName = process.env.DB_NAME;
+            this.inMemoryGuilds = {};
             this.client = new MongoClient(process.env.DB_LOGIN_URL, { useUnifiedTopology: true });
             this.client.connect((err: MongoError) => {
                 if (err) {
                     throw err;
                 }
             });
-            this.dbName = process.env.DB_NAME;
-            this.inMemoryGuilds = {};
         } else {
             console.error('Database variables not defined');
             process.exit(1);
@@ -27,6 +27,10 @@ export class Dao {
     
     private getCollection(collectionName: string): Collection<any> {
         return this.client.db(this.dbName).collection(collectionName);
+    }
+
+    async log(info: any): Promise<void> {
+        await this.getCollection('logs').insertOne(info);
     }
 
     async setNewGuildInMemory(guild: Guild): Promise<void> {
@@ -38,6 +42,15 @@ export class Dao {
         };
         this.inMemoryGuilds[guild.id] = newGuild;
         await this.getCollection('guilds').insertOne(newGuild);
+    }
+
+    async newGuildJoined(guild: Guild): Promise<void> {
+        const dbGuild: GuildMemory | null = await this.getCollection('guilds').findOne({ id: guild.id });
+        if (dbGuild) { // Guild already exists in database
+            this.inMemoryGuilds[guild.id] = dbGuild;
+        } else { // Guild isn't already in database
+            await this.setNewGuildInMemory(guild);
+        }
     }
 
     async initializeMemory(bot: Client): Promise<void> {

@@ -1,4 +1,4 @@
-import { Client, Message } from 'discord.js';
+import { Client, Message, Presence } from 'discord.js';
 import { logger } from './source/util/log';
 import { commands } from './source/commands';
 import messages from './source/util/messages.json';
@@ -41,9 +41,13 @@ bot.on('message', async (message: Message) => {
     }
 });
 
-bot.on('presenceUpdate', presenceUpdate);
+bot.on('presenceUpdate', async (oldPresence: Presence | undefined, newPresence: Presence) => {
+    await presenceUpdate(oldPresence, newPresence);
+});
 
-bot.on('guildCreate', dao.setNewGuildInMemory);
+bot.on('guildCreate', async guild => {
+    await dao.newGuildJoined(guild);
+});
 
 // BOT START
 

@@ -232,7 +232,7 @@ export const commands: { [key: string]: Command } = {
                 description: 'Starts the process to create a new Application for an @role',
                 example: 'app create',
                 permission: 2,
-                execute: createApplication // TODO: CHANGE
+                execute: createApplication
             }
         }
     }
