@@ -1,6 +1,6 @@
 import { Collection, MongoClient, MongoError } from 'mongodb';
 
-import { Client, Guild, Role } from 'discord.js';
+import { Client, Guild } from 'discord.js';
 import messages from '../util/messages.json';
 import { GuildMemory } from '../models/guild-memory';
 import { Application } from '../models/application';
@@ -148,11 +148,15 @@ export class Dao {
     }
 
     async getApplications(guild: Guild): Promise<Application[]> {
-        return await this.getCollection('applications').find({ guildId: guild.id }).toArray();
+        return (await this.getCollection('applications').find({ guildId: guild.id }).toArray());
     }
 
     async uploadApplication(app: Application): Promise<void> {
         await this.getCollection('applications').insertOne(app);
+    }
+
+    async deleteApplication(objectId: string | undefined): Promise<void> {
+        await this.getCollection('applications').deleteOne({ _id: objectId });
     }
 
     getAppSetupGuilds(): GuildMemory[] {

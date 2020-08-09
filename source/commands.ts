@@ -7,7 +7,7 @@ import { add, getImage, ping } from './commands/misc';
 import { help } from './commands/help';
 import { say } from './commands/say';
 import { setStreamChannel, setStreamRole } from './commands/presence-integration';
-import { createApplication, newApplyMessage, setReviewChannel } from './commands/applications';
+import { createApplication, deleteApplication, newApplyMessage, setReviewChannel } from './commands/applications';
 import { subCommandHandler } from './util/parsing';
 
 export const commands: { [key: string]: Command } = {
@@ -233,6 +233,14 @@ export const commands: { [key: string]: Command } = {
                 example: 'app new',
                 permission: 2,
                 execute: createApplication
+            },
+            delete: {
+                name: 'Delete Application',
+                aliases: ['del', 'delete', 'remove'],
+                description: 'Starts the process to delete an Application for an @role',
+                example: 'app delete',
+                permission: 2,
+                execute: deleteApplication
             }
         }
     }

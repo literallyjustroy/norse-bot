@@ -10,4 +10,5 @@ export interface Application {
     applicantId?: string;
     reviewMessageId?: string;
     reviewChannelId?: string;
+    _id?: string;
 }

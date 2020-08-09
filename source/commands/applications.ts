@@ -205,12 +205,12 @@ async function getApplyMessage(guild: Guild): Promise<Message | undefined> {
 
 /**
  * Generates a new apply Message
- * @param message A Message within a guild's text channel
+ * @param guild
  * @param applyChannel
  * @param apps
  */
-async function generateApplyMessage(message: Message, applyChannel: TextChannel | DMChannel | NewsChannel, apps: Application[]): Promise<Message | undefined> {
-    await getDao().setApplyChannelId(message.guild!, applyChannel.id);
+async function generateApplyMessage(guild: Guild, applyChannel: TextChannel | DMChannel | NewsChannel, apps: Application[]): Promise<Message | undefined> {
+    await getDao().setApplyChannelId(guild, applyChannel.id);
 
     const applyEmbed = textToEmbed('React with the number 🔢 associated with the application you wish to complete')
         .setTitle('Role Applications');
@@ -227,7 +227,7 @@ async function generateApplyMessage(message: Message, applyChannel: TextChannel 
         await applyMessage.react(NUMBER_EMOJI[i]);
     }
 
-    await getDao().setApplyMessageId(message.guild!, applyMessage.id);
+    await getDao().setApplyMessageId(guild, applyMessage.id);
     collectOnApplyMessage(applyMessage);
     return applyMessage;
 }
@@ -242,7 +242,7 @@ export async function newApplyMessage(command: Command, args: string[], message:
             const apps = await getDao().getApplications(message.guild!);
             if (apps.length > 0) {
                 await message.channel.send(textToEmbed(`New Application Message created in <#${channel.id}> channel`));
-                await generateApplyMessage(message, channel, apps);
+                await generateApplyMessage(message.guild!, channel, apps);
             } else {
                 await sendError(message.channel, 'You must have at least one application to generate an apply message');
             }
@@ -270,17 +270,17 @@ export async function setReviewChannel(command: Command, args: string[], message
     }
 }
 
-async function updateApplyMessage(message: Message): Promise<void> {
-    const applyMessage = await getApplyMessage(message.guild!);
+async function updateApplyMessage(guild: Guild): Promise<void> {
+    const applyMessage = await getApplyMessage(guild);
     await applyMessage?.delete();
 
-    const applyChannelId = getDao().getApplyChannelId(message.guild!);
+    const applyChannelId = getDao().getApplyChannelId(guild);
     if (applyChannelId) {
-        const applyChannel = message.guild!.channels.cache.get(applyChannelId) as TextChannel;
+        const applyChannel = guild.channels.cache.get(applyChannelId) as TextChannel;
         if (applyChannel) {
-            const apps = await getDao().getApplications(message.guild!);
+            const apps = await getDao().getApplications(guild);
             if (apps.length > 0) {
-                await generateApplyMessage(message, applyChannel, apps);
+                await generateApplyMessage(guild, applyChannel, apps);
             }
         }
     }
@@ -295,7 +295,6 @@ async function finishApplication(message: Message, app: Application): Promise<vo
                     { symbol:'⛔', label:'Cancel' }
                 ]
             ))
-
     );
     reactionSelect(appPreview, ['✅', '⛔'], QUESTION_TIMEOUT, message.author).then(async reaction => {
         if (reaction) {
@@ -305,7 +304,7 @@ async function finishApplication(message: Message, app: Application): Promise<vo
                     if (guildApps.length < GUILD_APP_LIMIT) {
                         await getDao().uploadApplication(app);
                         await sendSuccess(message.channel,`Application for <@&${app.roleId}> saved!`);
-                        await updateApplyMessage(message);
+                        await updateApplyMessage(message.guild!);
                     } else {
                         await sendError(message.channel, `Failed to submit application. Your server is at the application limit of ${GUILD_APP_LIMIT}.`);
                     }
@@ -336,35 +335,37 @@ export async function createApplication(command: Command, args: string[], messag
     try {
         await message.channel.send(textToEmbed('What is the role for this new application? (Ex: @Norse)'));
         const role = (await getResponse(message.channel, message.author, 70, QUESTION_TIMEOUT)).mentions.roles.first();
+        const guildMember = message.guild!.member(message.author)!;
 
-        if (role) {
-            await message.channel.send(textToEmbed('What is the title of this new application? (Ex: NKU Student)'));
-            const title = (await getResponse(message.channel, message.author, 70, QUESTION_TIMEOUT)).content;
+        if (role ) {
+            if (guildMember.hasPermission('ADMINISTRATOR') || guildMember.roles.highest.comparePositionTo(role) > 0) {
+                await message.channel.send(textToEmbed('What is the title of this new application? (Ex: NKU Student)'));
+                const title = (await getResponse(message.channel, message.author, 70, QUESTION_TIMEOUT)).content;
 
-            await message.channel.send(textToEmbed('What is the description of this new application? (Ex: Apply here if you currently attend Northern Kentucky University)'));
-            const description = (await getResponse(message.channel, message.author, 500, QUESTION_TIMEOUT)).content;
+                await message.channel.send(textToEmbed('What is the description of this new application? (Ex: Apply here if you currently attend Northern Kentucky University)'));
+                const description = (await getResponse(message.channel, message.author, 500, QUESTION_TIMEOUT)).content;
 
-            // Questions
+                // Questions
 
-            const questions: string[] = [];
+                const questions: string[] = [];
 
-            for (let i = 1; i <= QUESTION_LIMIT && !appFinished; i++) {
-                const questionEmbed = textToEmbed(`**What is question ${i}?**`);
+                for (let i = 1; i <= QUESTION_LIMIT && !appFinished; i++) {
+                    const questionEmbed = textToEmbed(`**What is question ${i}?**`);
 
-                if (i === 1 ) {
-                    questionEmbed.setDescription(`**What is question ${i}?** (Ex: 'What is your student id number?')`);
-                } else if (i > 1) {
-                    questionEmbed.setFooter('✅ - Complete application');
-                } else if (i === QUESTION_LIMIT) {
-                    questionEmbed.setDescription(`**What is question ${i}? (FINAL QUESTION):** `);
-                }
+                    if (i === 1) {
+                        questionEmbed.setDescription(`**What is question ${i}?** (Ex: 'What is your student id number?')`);
+                    } else if (i > 1) {
+                        questionEmbed.setFooter('✅ - Complete application');
+                    } else if (i === QUESTION_LIMIT) {
+                        questionEmbed.setDescription(`**What is question ${i}? (FINAL QUESTION):** `);
+                    }
 
-                const botQuestion = await message.channel.send(questionEmbed);
-                if (i > 1) {
-                    reactionSelect(botQuestion, ['✅'], QUESTION_TIMEOUT, message.author).then(async reaction => {
-                        if (reaction && !appFinished) {
-                            appFinished = true;
-                            await finishApplication(message, {
+                    const botQuestion = await message.channel.send(questionEmbed);
+                    if (i > 1) {
+                        reactionSelect(botQuestion, ['✅'], QUESTION_TIMEOUT, message.author).then(async reaction => {
+                            if (reaction && !appFinished) {
+                                appFinished = true;
+                                await finishApplication(message, {
                                     roleId: role.id,
                                     roleName: role.name,
                                     name: title,
@@ -372,25 +373,28 @@ export async function createApplication(command: Command, args: string[], messag
                                     guildId: message.guild!.id,
                                     lastModifiedById: message.author.id,
                                     questions: questions
-                            });
-                        }
+                                });
+                            }
+                        });
+                    }
+
+                    const question = (await getResponse(message.channel, message.author, 200, QUESTION_TIMEOUT)).content;
+                    questions.push(question);
+                }
+                if (!appFinished) { // If all questions finished and the for loop ends without reaction
+                    appFinished = true;
+                    await finishApplication(message, {
+                        roleId: role.id,
+                        roleName: role.name,
+                        name: title,
+                        description: description,
+                        guildId: message.guild!.id,
+                        lastModifiedById: message.author.id,
+                        questions: questions
                     });
                 }
-
-                const question = (await getResponse(message.channel, message.author, 200, QUESTION_TIMEOUT)).content;
-                questions.push(question);
-            }
-            if (!appFinished) { // If all questions finished and the for loop ends without reaction
-                appFinished = true;
-                await finishApplication(message, {
-                    roleId: role.id,
-                    roleName: role.name,
-                    name: title,
-                    description: description,
-                    guildId: message.guild!.id,
-                    lastModifiedById: message.author.id,
-                    questions: questions
-                });
+            } else {
+                await sendError(message.channel, 'Cannot create an application for a role higher than your own');
             }
         } else {
             await sendError(message.channel, 'Failed to mention a valid role, restart the application creation process');
@@ -403,6 +407,60 @@ export async function createApplication(command: Command, args: string[], messag
         } else {
             logger.error(error);
             await message.channel.send('There was an error, it has been logged.');
+        }
+    }
+}
+
+export async function deleteApplication(command: Command, args: string[], message: Message): Promise<void> {
+    const apps = await getDao().getApplications(message.guild!);
+    if (apps.length > 0) {
+        const deleteEmbed = new MessageEmbed()
+            .setTitle('Application DELETION Menu')
+            .setDescription('React with the number 🔢 associated with the application you wish to **DELETE**')
+            .setColor(Colors.Failure);
+
+        let i = 0;
+        apps.forEach(app => {
+            deleteEmbed.addField(`${NUMBER_EMOJI[i]} ${app.name}`, app.description);
+            i += 1;
+        });
+
+        const deleteMessage = await message.channel.send(deleteEmbed);
+        const deleteReaction = await reactionSelect(deleteMessage, NUMBER_EMOJI.slice(0, apps.length), QUESTION_TIMEOUT);
+        if (deleteReaction) {
+            const emojiIndex = NUMBER_EMOJI.indexOf(deleteReaction.emoji.name);
+            const app = (await getDao().getApplications(message.guild!))[emojiIndex];
+
+            const confirmEmbed = textToEmbed(`Would you like to delete the ${app.name} (<@&${app.roleId}>) Application **(This cannot be undone)**`)
+                .setFooter(optionsString(
+                    [
+                        { symbol:'🗑️', label:'Delete' },
+                        { symbol:'❌', label:'Cancel' }
+                    ]
+                ));
+            const confirmMessage = await message.channel.send(confirmEmbed);
+
+            const confirmReaction = await reactionSelect(confirmMessage, ['🗑️', '❌'], QUESTION_TIMEOUT, message.author); // TODO make sure reactions are user specific
+            if (confirmReaction) {
+                switch(confirmReaction.emoji.name) {
+                    case '🗑️':
+                        const deleteConfirmEmbed = textToEmbed(`🗑️ **${app.name}** Application deleted by <@!${message.author.id}>!`)
+                            .setColor('#99a9b4');
+                        await message.channel.send(deleteConfirmEmbed);
+                        await getDao().deleteApplication(app._id);
+
+                        const applyMessage = getApplyMessage(message.guild!);
+                        if (applyMessage) {
+                            await updateApplyMessage(message.guild!);
+                        }
+                        break;
+                    case '❌':
+                        await sendError(message.channel, `Application Deletion canceled by <@!${message.author.id}>`);
+                        break;
+                }
+                await deleteMessage.delete();
+                await confirmMessage.delete();
+            }
         }
     }
 }
