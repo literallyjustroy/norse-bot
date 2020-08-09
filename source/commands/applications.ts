@@ -26,7 +26,7 @@ const NUMBER_EMOJI = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6�
 
 function getAppHeader(guild: Guild, app: Application): MessageEmbed {
     return textToEmbed(app.description)
-        .setTitle(`${guild.name}'s Application for **${app.name}** (@${app.roleName})`)
+        .setTitle(`${guild.name}'s application for **${app.name}** (@${app.roleName})`)
         .setThumbnail(guild.iconURL() || '')
         .setDescription(`*${app.description}*`);
 }
@@ -86,7 +86,7 @@ async function collectOnAppReview(reviewMessage: Message, app: Application): Pro
 
 async function sendAppForReview(reviewChannel: TextChannel, user: User, app: Application): Promise<void> {
     const appPreview = getAppPreview(reviewChannel.guild, app)
-        .setTitle(`${user.username} Applied for **${app.name}** (@${app.roleName})`)
+        .setTitle(`${user.username} applied for **${app.name}** (@${app.roleName})`)
         .setDescription(`**${user.tag}**\nMention:<@!${user.id}>`)
         .setColor('#ffca36');
     appPreview.thumbnail = null;
