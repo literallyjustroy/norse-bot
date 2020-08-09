@@ -7,7 +7,7 @@ import { add, getImage, ping } from './commands/misc';
 import { help } from './commands/help';
 import { say } from './commands/say';
 import { setStreamChannel, setStreamRole } from './commands/presence-integration';
-import { createApplication, newApplyMessage } from './commands/applications';
+import { createApplication, newApplyMessage, setReviewChannel } from './commands/applications';
 import { subCommandHandler } from './util/parsing';
 
 export const commands: { [key: string]: Command } = {
@@ -191,7 +191,7 @@ export const commands: { [key: string]: Command } = {
         name: 'Applications',
         aliases: ['apps', 'application', 'applications'],
         description: 'Contains role application commands',
-        example: 'app create',
+        example: 'app new',
         validation: {
             type: Validator.STRING,
             min: 1,
@@ -224,13 +224,13 @@ export const commands: { [key: string]: Command } = {
                     message: 'Must provide one text channel'
                 },
                 permission: 2,
-                execute: setStreamChannel // TODO: CHANGE
+                execute: setReviewChannel
             },
-            create: {
+            new: {
                 name: 'Create New Application',
-                aliases: ['new'],
+                aliases: ['create'],
                 description: 'Starts the process to create a new Application for an @role',
-                example: 'app create',
+                example: 'app new',
                 permission: 2,
                 execute: createApplication
             }

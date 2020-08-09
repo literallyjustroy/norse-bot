@@ -7,4 +7,7 @@ export interface Application {
     lastModifiedById: string;
     questions: string[];
     answers?: string[];
+    applicantId?: string;
+    reviewMessageId?: string;
+    reviewChannelId?: string;
 }

@@ -3,6 +3,7 @@ import { Collection, MongoClient, MongoError } from 'mongodb';
 import { Client, Guild, Role } from 'discord.js';
 import messages from '../util/messages.json';
 import { GuildMemory } from '../models/guild-memory';
+import { Application } from '../models/application';
 
 export class Dao {
     public client: MongoClient;
@@ -144,6 +145,32 @@ export class Dao {
     async setApplyMessageId(guild: Guild, applyMessageId: string | undefined): Promise<void> {
         this.inMemoryGuilds[guild.id].applyMessageId = applyMessageId;
         await this.getCollection('guilds').updateOne({ id: guild.id }, { $set: { applyMessageId: applyMessageId } });
+    }
+
+    async getApplications(guild: Guild): Promise<Application[]> {
+        return await this.getCollection('applications').find({ guildId: guild.id }).toArray();
+    }
+
+    async uploadApplication(app: Application): Promise<void> {
+        await this.getCollection('applications').insertOne(app);
+    }
+
+    getAppSetupGuilds(): GuildMemory[] {
+        return Object.values(this.inMemoryGuilds).filter(guildMemory =>
+            guildMemory.applyChannelId && guildMemory.applyMessageId
+        );
+    }
+
+    async getActiveApplications(): Promise<Application[]> {
+        return await this.getCollection('active-apps').find().toArray();
+    }
+
+    async uploadActiveApplication(app: Application): Promise<void> {
+        await this.getCollection('active-apps').insertOne(app);
+    }
+
+    async deleteActiveApplication(reviewMessageId: string): Promise<void> {
+        await this.getCollection('active-apps').deleteOne({ reviewMessageId: reviewMessageId });
     }
 
     async closeConnection(): Promise<void> {
