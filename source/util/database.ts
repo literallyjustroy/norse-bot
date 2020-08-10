@@ -152,6 +152,7 @@ export class Dao {
     }
 
     async uploadApplication(app: Application): Promise<void> {
+        app._id = undefined;
         await this.getCollection('applications').insertOne(app);
     }
 
@@ -170,6 +171,7 @@ export class Dao {
     }
 
     async uploadActiveApplication(app: Application): Promise<void> {
+        app._id = undefined;
         await this.getCollection('active-apps').insertOne(app);
     }
 
