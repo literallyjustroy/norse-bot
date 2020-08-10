@@ -1,24 +1,25 @@
 import { Collection, MongoClient, MongoError } from 'mongodb';
 
-import { Client, Guild, Role } from 'discord.js';
+import { Client, Guild } from 'discord.js';
 import messages from '../util/messages.json';
 import { GuildMemory } from '../models/guild-memory';
+import { Application } from '../models/application';
 
 export class Dao {
     public client: MongoClient;
     private dbName: string;
-    private inMemoryGuilds: { [id: string]: GuildMemory };
+    private readonly inMemoryGuilds: { [id: string]: GuildMemory };
 
     constructor() {
         if (process.env.DB_NAME && process.env.DB_LOGIN_URL) {
+            this.dbName = process.env.DB_NAME;
+            this.inMemoryGuilds = {};
             this.client = new MongoClient(process.env.DB_LOGIN_URL, { useUnifiedTopology: true });
             this.client.connect((err: MongoError) => {
                 if (err) {
                     throw err;
                 }
             });
-            this.dbName = process.env.DB_NAME;
-            this.inMemoryGuilds = {};
         } else {
             console.error('Database variables not defined');
             process.exit(1);
@@ -27,6 +28,10 @@ export class Dao {
     
     private getCollection(collectionName: string): Collection<any> {
         return this.client.db(this.dbName).collection(collectionName);
+    }
+
+    async log(info: any): Promise<void> {
+        await this.getCollection('logs').insertOne(info);
     }
 
     async setNewGuildInMemory(guild: Guild): Promise<void> {
@@ -38,6 +43,15 @@ export class Dao {
         };
         this.inMemoryGuilds[guild.id] = newGuild;
         await this.getCollection('guilds').insertOne(newGuild);
+    }
+
+    async newGuildJoined(guild: Guild): Promise<void> {
+        const dbGuild: GuildMemory | null = await this.getCollection('guilds').findOne({ id: guild.id });
+        if (dbGuild) { // Guild already exists in database
+            this.inMemoryGuilds[guild.id] = dbGuild;
+        } else { // Guild isn't already in database
+            await this.setNewGuildInMemory(guild);
+        }
     }
 
     async initializeMemory(bot: Client): Promise<void> {
@@ -104,6 +118,63 @@ export class Dao {
     async setStreamChannelId(guild: Guild, streamChannelId: string | undefined): Promise<void> {
         this.inMemoryGuilds[guild.id].streamChannelId = streamChannelId;
         await this.getCollection('guilds').updateOne({ id: guild.id }, { $set: { streamChannelId: streamChannelId } });
+    }
+
+    getApplyChannelId(guild: Guild): string | undefined {
+        return this.inMemoryGuilds[guild.id].applyChannelId;
+    }
+
+    async setApplyChannelId(guild: Guild, applyChannelId: string | undefined): Promise<void> {
+        this.inMemoryGuilds[guild.id].applyChannelId = applyChannelId;
+        await this.getCollection('guilds').updateOne({ id: guild.id }, { $set: { applyChannelId: applyChannelId } });
+    }
+
+    getReviewChannelId(guild: Guild): string | undefined {
+        return this.inMemoryGuilds[guild.id].reviewChannelId;
+    }
+
+    async setReviewChannelId(guild: Guild, reviewChannelId: string | undefined): Promise<void> {
+        this.inMemoryGuilds[guild.id].reviewChannelId = reviewChannelId;
+        await this.getCollection('guilds').updateOne({ id: guild.id }, { $set: { reviewChannelId: reviewChannelId } });
+    }
+
+    getApplyMessageId(guild: Guild): string | undefined {
+        return this.inMemoryGuilds[guild.id].applyMessageId;
+    }
+
+    async setApplyMessageId(guild: Guild, applyMessageId: string | undefined): Promise<void> {
+        this.inMemoryGuilds[guild.id].applyMessageId = applyMessageId;
+        await this.getCollection('guilds').updateOne({ id: guild.id }, { $set: { applyMessageId: applyMessageId } });
+    }
+
+    async getApplications(guild: Guild): Promise<Application[]> {
+        return (await this.getCollection('applications').find({ guildId: guild.id }).toArray());
+    }
+
+    async uploadApplication(app: Application): Promise<void> {
+        await this.getCollection('applications').insertOne(app);
+    }
+
+    async deleteApplication(objectId: string | undefined): Promise<void> {
+        await this.getCollection('applications').deleteOne({ _id: objectId });
+    }
+
+    getAppSetupGuilds(): GuildMemory[] {
+        return Object.values(this.inMemoryGuilds).filter(guildMemory =>
+            guildMemory.applyChannelId && guildMemory.applyMessageId
+        );
+    }
+
+    async getActiveApplications(): Promise<Application[]> {
+        return await this.getCollection('active-apps').find().toArray();
+    }
+
+    async uploadActiveApplication(app: Application): Promise<void> {
+        await this.getCollection('active-apps').insertOne(app);
+    }
+
+    async deleteActiveApplication(reviewMessageId: string): Promise<void> {
+        await this.getCollection('active-apps').deleteOne({ reviewMessageId: reviewMessageId });
     }
 
     async closeConnection(): Promise<void> {

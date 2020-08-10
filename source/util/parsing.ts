@@ -107,3 +107,12 @@ export async function executeCommand(command: Command, args: string[], message: 
         await message.channel.send(`${messages.unknownMessage} (Try ${getDao().getPrefix(message.guild)}help)`);
     }
 }
+
+export async function subCommandHandler(command: Command, args: string[], message: Message): Promise<void> {
+    const subCommand = getCommand(args[0].toLowerCase(), command.subCommands!);
+    if (subCommand) {
+        await executeCommand(subCommand, [argsToString(args)], message);
+    } else {
+        await message.channel.send(`Invalid sub-command (try ${getDao().getPrefix(message.guild)}help)`);
+    }
+}

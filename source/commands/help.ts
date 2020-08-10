@@ -60,7 +60,7 @@ function generateHelpMessage(prefix: string): MessageEmbed[] {
      const embeds: MessageEmbed[] = [];
 
      keys.forEach(key => {
-          if (index % 6 === 0) {
+          if (index % 8 === 0) { // Limit to 7 commands per help embed (25 fields is maximum, 3 fields per command)
                embeds.push(helpMessage);
                helpMessage = getHelpMessageTemplate();
           }

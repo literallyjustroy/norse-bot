@@ -7,4 +7,7 @@ export interface GuildMemory {
     ticketLogId?: string;
     streamChannelId?: string;
     streamRoleId?: string;
+    applyChannelId?: string;
+    reviewChannelId?: string;
+    applyMessageId?: string;
 }

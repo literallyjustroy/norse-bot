@@ -1,7 +1,6 @@
 import { Activity, GuildMember, Message, MessageEmbed, Presence, TextChannel } from 'discord.js';
 import { Command } from '../models/command';
 import { getDao } from '../util/database';
-import { argsToString, executeCommand, getCommand } from '../util/parsing';
 import { StreamMessage } from '../models/stream-message';
 
 const streamMessages: StreamMessage[] = [];
@@ -151,14 +150,5 @@ export async function presenceUpdate(oldPresence: Presence | undefined, newPrese
         if (streamActivity) {
             await userStoppedStreaming(guildUser, streamActivity);
         }
-    }
-}
-
-export async function streamHandler(command: Command, args: string[], message: Message): Promise<void> {
-    const subCommand = getCommand(args[0].toLowerCase(), command.subCommands!);
-    if (subCommand) {
-        await executeCommand(subCommand, [argsToString(args)], message);
-    } else {
-        await message.channel.send(`Invalid stream sub-command (try ${getDao().getPrefix(message.guild)}help stream)`);
     }
 }
