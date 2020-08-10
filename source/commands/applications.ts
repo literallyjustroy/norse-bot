@@ -158,7 +158,7 @@ function collectOnApplyMessage(applyMessage: Message): void {
  * Doesn't rely on getApplyMessage(Guild) because we need to fetch channels in the case that they are not cached
  * @param bot
  */
-export async function collectAllApplyMessages(bot: Client): Promise<void> { // TODO Replace fetches with safe fetch
+export async function collectAllApplyMessages(bot: Client): Promise<void> {
     const appSetupGuilds = getDao().getAppSetupGuilds();
     for (const guildMemory of appSetupGuilds) {
         const applyChannel = await safeFetch(bot.channels, guildMemory.applyChannelId!) as TextChannel;
@@ -440,7 +440,7 @@ export async function deleteApplication(command: Command, args: string[], messag
         });
 
         const deleteMessage = await message.channel.send(deleteEmbed);
-        const deleteReaction = await reactionSelect(deleteMessage, NUMBER_EMOJI.slice(0, apps.length), QUESTION_TIMEOUT);
+        const deleteReaction = await reactionSelect(deleteMessage, NUMBER_EMOJI.slice(0, apps.length), QUESTION_TIMEOUT, message.author);
         if (deleteReaction) {
             const emojiIndex = NUMBER_EMOJI.indexOf(deleteReaction.emoji.name);
             const app = (await getDao().getApplications(message.guild!))[emojiIndex];
@@ -454,7 +454,7 @@ export async function deleteApplication(command: Command, args: string[], messag
                 ));
             const confirmMessage = await message.channel.send(confirmEmbed);
 
-            const confirmReaction = await reactionSelect(confirmMessage, ['🗑️', '❌'], QUESTION_TIMEOUT, message.author); // TODO make sure reactions are user specific
+            const confirmReaction = await reactionSelect(confirmMessage, ['🗑️', '❌'], QUESTION_TIMEOUT, message.author);
             if (confirmReaction) {
                 switch(confirmReaction.emoji.name) {
                     case '🗑️':
