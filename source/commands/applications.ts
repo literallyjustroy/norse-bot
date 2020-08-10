@@ -13,7 +13,7 @@ import {
     addReactions,
     appTimeOut, Colors,
     getResponse, optionsString,
-    reactionSelect,
+    reactionSelect, safeFetch,
     sendError,
     sendSuccess,
     textToEmbed
@@ -87,7 +87,7 @@ async function collectOnAppReview(reviewMessage: Message, app: Application): Pro
 async function sendAppForReview(reviewChannel: TextChannel, user: User, app: Application): Promise<void> {
     const appPreview = getAppPreview(reviewChannel.guild, app)
         .setTitle(`${user.username} applied for **${app.name}** (@${app.roleName})`)
-        .setDescription(`**${user.tag}**\nMention:<@!${user.id}>`)
+        .setDescription(`**${user.tag}**\nMention:<@!${user.id}>\nRole:<@&${app.roleId}>`)
         .setColor('#ffca36');
     appPreview.thumbnail = null;
     appPreview.setFooter(optionsString([{ symbol:'✅', label:'Accept' }, { symbol:'❌', label:'Reject' }]));
@@ -154,12 +154,12 @@ function collectOnApplyMessage(applyMessage: Message): void {
  * Doesn't rely on getApplyMessage(Guild) because we need to fetch channels in the case that they are not cached
  * @param bot
  */
-export async function collectAllApplyMessages(bot: Client): Promise<void> {
+export async function collectAllApplyMessages(bot: Client): Promise<void> { // TODO Replace fetches with safe fetch
     const appSetupGuilds = getDao().getAppSetupGuilds();
     for (const guildMemory of appSetupGuilds) {
-        const applyChannel = await bot.channels.fetch(guildMemory.applyChannelId!) as TextChannel;
+        const applyChannel = await safeFetch(bot.channels, guildMemory.applyChannelId!) as TextChannel;
         if (applyChannel) {
-            const applyMessage = await applyChannel.messages.fetch(guildMemory.applyMessageId!);
+            const applyMessage = await safeFetch(applyChannel.messages, guildMemory.applyMessageId!);
             if (applyMessage) {
                 await collectOnApplyMessage(applyMessage);
             }
@@ -174,9 +174,9 @@ export async function collectAllApplyMessages(bot: Client): Promise<void> {
 export async function collectAllActiveApps(bot: Client): Promise<void> {
     const activeApps = await getDao().getActiveApplications();
     for (const app of activeApps) {
-        const reviewChannel = await bot.channels.fetch(app.reviewChannelId!) as TextChannel;
+        const reviewChannel = await safeFetch(bot.channels, app.reviewChannelId!) as TextChannel;
         if (reviewChannel) {
-            const reviewMessage = await reviewChannel.messages.fetch(app.reviewMessageId!);
+            const reviewMessage = await safeFetch(reviewChannel.messages, app.reviewMessageId!);
             if (reviewMessage) {
                 await collectOnAppReview(reviewMessage, app);
             } else {
@@ -250,7 +250,10 @@ export async function newApplyMessage(command: Command, args: string[], message:
             await sendError(message.channel, 'Must mention a valid server text channel');
         }
     } else {
+        const applyMessage = await getApplyMessage(message.guild!);
+        await applyMessage?.delete();
         await getDao().setApplyChannelId(message.guild!, undefined);
+        await getDao().setApplyMessageId(message.guild!, undefined);
         await message.channel.send(`New applications are no longer being polled. To set a application channel, mention it by name (Ex. ${getDao().getPrefix(message.guild)}${command.example})`);
     }
 }

@@ -1,8 +1,30 @@
-import { DMChannel, Message, MessageEmbed, MessageReaction, NewsChannel, TextChannel, User } from 'discord.js';
+import {
+    Channel,
+    ChannelManager,
+    DMChannel,
+    Message,
+    MessageEmbed,
+    MessageManager,
+    MessageReaction,
+    NewsChannel,
+    TextChannel,
+    User
+} from 'discord.js';
 
 export enum Colors {
     Success = '#76b155',
     Failure = '#db2e44'
+}
+
+export async function safeFetch(manager: ChannelManager, id: string): Promise<Channel | undefined>;
+export async function safeFetch(manager: MessageManager, id: string): Promise<Message | undefined>;
+
+export async function safeFetch(manager: ChannelManager | MessageManager, id: string): Promise<Channel | Message | undefined> {
+    try {
+        return await manager.fetch(id);
+    } catch (error) {
+        return undefined;
+    }
 }
 
 export async function sleep(ms: number): Promise<any> {

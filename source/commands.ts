@@ -14,7 +14,7 @@ export const commands: { [key: string]: Command } = {
     add: {
         name: 'Add',
         aliases: ['plus'],
-        description: 'Adds two numbers together.',
+        description: 'Adds two numbers together',
         example: 'add 2 2',
         validation: {
             type: Validator.NUMBER,
@@ -41,7 +41,7 @@ export const commands: { [key: string]: Command } = {
     get: {
         name: 'Get Image',
         aliases: ['random', 'image', 'getimage'],
-        description: 'Gets random image given a list of strings as keywords.',
+        description: 'Gets random image given a list of strings as keywords',
         example: 'get cool dogs',
         validation: {
             type: Validator.STRING,
@@ -52,13 +52,13 @@ export const commands: { [key: string]: Command } = {
     },
     help: {
         name: 'Help',
-        description: 'Gets the description of all commands (or command specified).',
+        description: 'Gets the description of all commands (or command specified)',
         example: 'help ticket',
         execute: help
     },
     ping: {
         name: 'Ping',
-        description: 'Calculates how long it took for a user\'s message to reach the bot.',
+        description: 'Calculates how long it took for a user\'s message to reach the bot',
         example: 'ping',
         execute: ping
     },
@@ -107,21 +107,21 @@ export const commands: { [key: string]: Command } = {
             create: {
                 name: 'Create Ticket',
                 aliases: ['new', 'open', 'make'],
-                description: 'Creates a ticket with the name given.',
+                description: 'Creates a ticket with the name given',
                 example: 'ticket create jeff hit me',
                 execute: createTicket
             },
             close: {
                 name: 'Close Ticket',
                 aliases: ['stop', 'cancel', 'remove', 'end', 'finish', 'done'],
-                description: 'Closes the ticket this message was sent in.',
+                description: 'Closes the ticket this message was sent in',
                 example: 'ticket close jeff said it was an accident :)',
                 execute: closeTicket
             },
             add: {
                 name: 'Add User to Ticket',
                 aliases: ['adduser'],
-                description: 'Adds the given user to the ticket this message was sent in.',
+                description: 'Adds the given user to the ticket this message was sent in',
                 example: 'ticket add @Roy [Visual2D]',
                 validation: {
                     type: Validator.STRING,
@@ -134,7 +134,7 @@ export const commands: { [key: string]: Command } = {
             log: {
                 name: 'Set Ticket Log Channel',
                 aliases: ['logs', 'setlog', 'setlogs', 'logchannel', 'transcript', 'transcripts'],
-                description: 'Sets the text channel to record ticket logs in, or unsets the channel if no argument is given.',
+                description: 'Sets the text channel to record ticket logs in, or unsets the channel if no argument is given',
                 example: 'ticket log #ticket-transcripts',
                 validation: {
                     type: Validator.STRING,
@@ -149,7 +149,7 @@ export const commands: { [key: string]: Command } = {
     stream: {
         name: 'Streams',
         aliases: ['streams'],
-        description: 'Contains streaming notification commands',
+        description: 'Contains streaming notification commands. Set a streaming notification channel with **stream channel #channel-name**, and set a streamer role with **stream role @rolename**',
         example: 'stream channel #stream-notifications',
         validation: {
             type: Validator.STRING,
@@ -162,7 +162,7 @@ export const commands: { [key: string]: Command } = {
             channel: {
                 name: 'Set Stream Notification Channel',
                 aliases: ['set', 'setchannel'],
-                description: 'Sets the text channel to post streaming notifications in, or unsets the channel if no argument is given.',
+                description: 'Sets the text channel to post streaming notifications in, or unsets the channel if no argument is given',
                 example: 'stream channel #streaming-notifications',
                 validation: {
                     type: Validator.STRING,
@@ -190,7 +190,7 @@ export const commands: { [key: string]: Command } = {
     app: {
         name: 'Applications',
         aliases: ['apps', 'application', 'applications'],
-        description: 'Contains role application commands',
+        description: 'Contains role application commands. Set an apply channel with **app applychannel #channel-name**, set a review channel with **app reviewchannel #channel-name**, and create a new app with **app create**',
         example: 'app new',
         validation: {
             type: Validator.STRING,
@@ -203,7 +203,7 @@ export const commands: { [key: string]: Command } = {
             applychannel: {
                 name: 'Create new NorseBot app. message',
                 aliases: ['newapply', 'setapply'],
-                description: 'Sets the text channel to post the bot\'s application message (where people apply), or unsets the channel if no argument is given.',
+                description: 'Sets the text channel to post the bot\'s application message (where people apply), or unsets the channel if no argument is given',
                 example: 'app applychannel #new-student-apps',
                 validation: {
                     type: Validator.STRING,
@@ -216,7 +216,7 @@ export const commands: { [key: string]: Command } = {
             reviewchannel: {
                 name: 'Set app. review channel',
                 aliases: ['review', 'reviews', 'setreview', 'logchannel'],
-                description: 'Sets the text channel to post user\'s finished apps for review, or unsets the channel if no argument is given.',
+                description: 'Sets the text channel to post user\'s finished apps for review, or unsets the channel if no argument is given',
                 example: 'app reviewchannel #application-logs',
                 validation: {
                     type: Validator.STRING,
