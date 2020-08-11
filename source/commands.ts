@@ -149,7 +149,7 @@ export const commands: { [key: string]: Command } = {
     stream: {
         name: 'Streams',
         aliases: ['streams'],
-        description: 'Contains streaming notification commands. Set a streaming notification channel with **stream channel #channel-name**, and set a streamer role with **stream role @rolename**',
+        description: 'Contains streaming notification commands, streaming is detected when the user enters "Streaming Mode" on discord (occurs automatically on PC). Set a streaming notification channel with **stream channel #channel-name**, and set a streamer role with **stream role @rolename**',
         example: 'stream channel #stream-notifications',
         validation: {
             type: Validator.STRING,
@@ -190,7 +190,7 @@ export const commands: { [key: string]: Command } = {
     app: {
         name: 'Applications',
         aliases: ['apps', 'application', 'applications'],
-        description: 'Contains role application commands. Set an apply channel with **app applychannel #channel-name**, set a review channel with **app reviewchannel #channel-name**, and create a new app with **app create**',
+        description: 'Contains role application commands. Set an apply channel with **app applychannel #channel-name**, set a review channel with **app reviewchannel #channel-name**, and create a new app with **app new**',
         example: 'app new',
         validation: {
             type: Validator.STRING,

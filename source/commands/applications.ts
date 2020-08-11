@@ -113,6 +113,7 @@ async function sendSetupError(user: User, guildName: string): Promise<void> {
 function collectOnApplyMessage(applyMessage: Message): void {
     const collector = applyMessage.createReactionCollector((reaction, user) => NUMBER_EMOJI.includes(reaction.emoji.name) && !user.bot);
     collector.on('collect', async (reaction, user) => {
+        await reaction.users.remove(user);
         const reviewChannelId = await getDao().getReviewChannelId(applyMessage.guild!);
         if (reviewChannelId) {
             const reviewChannel = applyMessage.guild!.channels.cache.get(reviewChannelId) as TextChannel;
@@ -129,7 +130,11 @@ function collectOnApplyMessage(applyMessage: Message): void {
                     let i = 1;
                     for (const question of app.questions) {
                         await user.send(textToEmbed(`**Question (${i}/${app.questions.length}):** ${question}`));
-                        app.answers.push((await getResponse(user.dmChannel, user, 320, QUESTION_TIMEOUT)).content);
+                        try {
+                            app.answers.push((await getResponse(user.dmChannel, user, 320, QUESTION_TIMEOUT)).content);
+                        } catch(error) {
+                            return await appTimeOut(user.dmChannel, user);
+                        }
                         i += 1;
                     }
                     const appPreview = getAppPreview(applyMessage.guild!, app);
@@ -324,7 +329,7 @@ async function finishApplication(message: Message, app: Application): Promise<vo
                     break;
             }
         } else {
-            await appTimeOut(message);
+            await appTimeOut(message.channel, message.author);
         }
     });
 
@@ -417,7 +422,7 @@ export async function createApplication(command: Command, args: string[], messag
     } catch(error) {
         if (error.size === 0) {
             if (!appFinished)
-                await appTimeOut(message);
+                await appTimeOut(message.channel, message.author);
         } else {
             logger.error(error);
             await message.channel.send('There was an error, it has been logged.');

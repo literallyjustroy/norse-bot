@@ -35,8 +35,8 @@ export function capitalizeFirstLetter(string: string): string {
     return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
-export async function appTimeOut(message: Message): Promise<void> {
-    await message.channel.send(`<@!${message.author.id}>, you took too long to respond`);
+export async function appTimeOut(channel: TextChannel | DMChannel | NewsChannel, user: User): Promise<void> {
+    await channel.send(`<@!${user.id}>, you took too long to respond`);
 }
 
 export function textToEmbed(text: string): MessageEmbed {
