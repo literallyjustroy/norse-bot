@@ -49,11 +49,6 @@ export const commands: { [key: string]: Command } = {
         aliases: ['random', 'image', 'getimage'],
         description: 'Gets random image given a list of strings as keywords',
         example: 'get cool dogs',
-        validation: {
-            type: Validator.STRING,
-            min: 1,
-            message: 'Must provide at least 1 search term'
-        },
         execute: getImage
     },
     help: {

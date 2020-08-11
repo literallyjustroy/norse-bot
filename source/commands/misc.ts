@@ -1,7 +1,7 @@
-import { FlickrResponse } from '../models/flickr-response';
 import fetch from 'node-fetch';
 import { Command } from '../models/command';
 import { Message } from 'discord.js';
+import { sendError } from '../util/util';
 
 /**
  * Calculates how long it took for a user's message to reach the bot (starting from when the user sent the message)
@@ -12,36 +12,25 @@ export function getPing(sentTime: number): string {
     return String(Math.abs(Date.now().valueOf() - sentTime)) + ' ms';
 }
 
-/**
- * Returns a random image given a list of strings as keywords
- * Hits the FlickrAPI and selects a random photo from the top 100 relevant results
- * @param keywords A list of strings to be searched against
- * @returns {Promise<string>} Returns a URL of a photo as a string, or an error message
- */
-export async function randomImage(keywords: string[]): Promise<string> {
-    let response: string;
-    const keyword = encodeURI(keywords.join(' '));
-    let numPhotos = 100;
-    const url = `https://www.flickr.com/services/rest/?method=flickr.photos.search&sort=relevance&per_page=100&format=json&nojsoncallback=1&api_key=0c748ca30b04100a36deb13f12b3c1d3&tags=${keyword}`;
+export async function getImage(command: Command, args: string[], message: Message): Promise<void> {
+    if (process.env.UNSPLASH_TOKEN) {
+        const keyword = encodeURI(args.join(' '));
+        const url = `https://api.unsplash.com/photos/random/?query=${keyword}&client_id=${process.env.UNSPLASH_TOKEN}`;
 
-    try {
-        const apiResponse = await fetch(url);
-        const flickrResponse = await apiResponse.json() as FlickrResponse;
-
-        if (flickrResponse.photos.photo.length === 0)
-            response = 'Search returned no results';
-        else {
-            numPhotos = flickrResponse.photos.photo.length; // reset incase less photos are available
-
-            const photoIndex = Math.floor(Math.random() * Math.floor(numPhotos)); // Random int less than num photos
-
-            const photo = flickrResponse.photos.photo[photoIndex];
-            response = `http://farm${photo.farm}.staticflickr.com/${photo.server}/${photo.id}_${photo.secret}.jpg`;
+        try {
+            const response = await fetch(url);
+            const jsonResponse = await response.json();
+            if (jsonResponse.urls?.regular) {
+                await message.channel.send(jsonResponse.urls.regular);
+            } else {
+                await sendError(message.channel, 'No results found');
+            }
+        } catch (error) {
+            await sendError(message.channel, 'Error getting requested image (Might have hit image limit)');
         }
-    } catch(error) {
-        response = 'Error getting requested image';
+    } else {
+        await sendError(message.channel, 'This command isn\'t setup yet. (Must set UNSPLASH_TOKEN environment variable)');
     }
-    return response;
 }
 
 export async function add(command: Command, nums: number[], message: Message): Promise<void> {
@@ -50,8 +39,4 @@ export async function add(command: Command, nums: number[], message: Message): P
 
 export async function ping(command: Command, args: string[], message: Message): Promise<void> {
     await message.channel.send(getPing(message.createdTimestamp));
-}
-
-export async function getImage(command: Command, args: string[], message: Message): Promise<void> {
-    await message.channel.send(await randomImage(args));
 }
