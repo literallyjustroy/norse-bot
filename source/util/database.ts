@@ -138,6 +138,15 @@ export class Dao {
         await this.getCollection('guilds').updateOne({ id: guild.id }, { $set: { reviewChannelId: reviewChannelId } });
     }
 
+    getArchiveChannelId(guild: Guild): string | undefined {
+        return this.inMemoryGuilds[guild.id].archiveChannelId;
+    }
+
+    async setArchiveChannelId(guild: Guild, archiveChannelId: string | undefined): Promise<void> {
+        this.inMemoryGuilds[guild.id].archiveChannelId = archiveChannelId;
+        await this.getCollection('guilds').updateOne({ id: guild.id }, { $set: { archiveChannelId: archiveChannelId } });
+    }
+
     getApplyMessageId(guild: Guild): string | undefined {
         return this.inMemoryGuilds[guild.id].applyMessageId;
     }
