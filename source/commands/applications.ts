@@ -79,8 +79,16 @@ async function collectOnAppReview(reviewMessage: Message, app: Application): Pro
                 }
                 embed.setFooter(`Reviewed by ${user.tag} on ${new Date().toDateString()}`);
                 await reviewMessage.edit(embed);
-                await reviewMessage.reactions.removeAll();
                 await getDao().deleteActiveApplication(app.reviewMessageId!);
+                await reviewMessage.reactions.removeAll();
+
+                const archiveChannelId = getDao().getArchiveChannelId(reviewMessage.guild!);
+                if (archiveChannelId) {
+                    const archiveChannel = reviewMessage.guild!.channels.cache.get(archiveChannelId) as TextChannel;
+                    if (archiveChannel) {
+                        await archiveChannel.send(embed);
+                    }
+                }
             } else {
                 await sendError(reviewMessage.channel, 'That applicant isn\'t even in your server anymore, try again if they return');
             }
@@ -263,7 +271,7 @@ export async function newApplyMessage(command: Command, args: string[], message:
         await applyMessage?.delete();
         await getDao().setApplyChannelId(message.guild!, undefined);
         await getDao().setApplyMessageId(message.guild!, undefined);
-        await message.channel.send(`New applications are no longer being polled. To set a application channel, mention it by name (Ex. ${getDao().getPrefix(message.guild)}${command.example})`);
+        await message.channel.send(textToEmbed(`New applications are no longer being polled. To set a application channel, mention it by name (Ex. ${getDao().getPrefix(message.guild)}${command.example})`));
     }
 }
 
@@ -279,6 +287,21 @@ export async function setReviewChannel(command: Command, args: string[], message
     } else {
         await getDao().setReviewChannelId(message.guild!, undefined);
         await message.channel.send(textToEmbed(`The review channel for applications has been unset, applications can no longer be filled out. To set a review channel, mention it by name (Ex. ${getDao().getPrefix(message.guild)}${command.example})`));
+    }
+}
+
+export async function setArchiveChannel(command: Command, args: string[], message: Message): Promise<void> {
+    const channel = message.mentions.channels?.first();
+    if (channel) {
+        if (channel.type === 'text' && message.guild) {
+            await getDao().setArchiveChannelId(message.guild, channel.id);
+            await message.channel.send(textToEmbed(`<#${channel.id}> will now receive applications after they have been submitted and reviewed`));
+        } else {
+            await sendError(message.channel, 'Must mention a valid server text channel');
+        }
+    } else {
+        await getDao().setArchiveChannelId(message.guild!, undefined);
+        await message.channel.send(textToEmbed('The application archive channel has been unset, applications can no longer be archived here after review'));
     }
 }
 
@@ -362,6 +385,7 @@ export async function createApplication(command: Command, args: string[], messag
                     // Questions
 
                     const questions: string[] = [];
+                    let botLastQuestion;
 
                     for (let i = 1; i <= QUESTION_LIMIT && !appFinished; i++) {
                         const questionEmbed = textToEmbed(`**What is question ${i}?**`);
@@ -369,14 +393,17 @@ export async function createApplication(command: Command, args: string[], messag
                         if (i === 1) {
                             questionEmbed.setDescription(`**What is question ${i}?** (Ex: 'What is your student id number?')`);
                         } else if (i > 1) {
+                            if (botLastQuestion)
+                                await botLastQuestion.reactions.removeAll();
                             questionEmbed.setFooter('✅ - Complete application');
                         } else if (i === QUESTION_LIMIT) {
                             questionEmbed.setDescription(`**What is question ${i}? (FINAL QUESTION):** `);
                         }
 
-                        const botQuestion = await message.channel.send(questionEmbed);
+                        botLastQuestion = await message.channel.send(questionEmbed);
                         if (i > 1) {
-                            reactionSelect(botQuestion, ['✅'], QUESTION_TIMEOUT, message.author).then(async reaction => {
+                            questionEmbed.setFooter('✅ - Complete application');
+                            reactionSelect(botLastQuestion, ['✅'], QUESTION_TIMEOUT, message.author).then(async reaction => {
                                 if (reaction && !appFinished) {
                                     appFinished = true;
                                     await finishApplication(message, {
@@ -397,6 +424,7 @@ export async function createApplication(command: Command, args: string[], messag
                             questions.push(question);
                         }
                     }
+
                     if (!appFinished) { // If all questions finished and the for loop ends without reaction
                         appFinished = true;
                         await finishApplication(message, {

@@ -7,7 +7,13 @@ import { add, getImage, ping } from './commands/misc';
 import { help } from './commands/help';
 import { say } from './commands/say';
 import { setStreamChannel, setStreamRole } from './commands/presence-integration';
-import { createApplication, deleteApplication, newApplyMessage, setReviewChannel } from './commands/applications';
+import {
+    createApplication,
+    deleteApplication,
+    newApplyMessage,
+    setArchiveChannel,
+    setReviewChannel
+} from './commands/applications';
 import { subCommandHandler } from './util/parsing';
 
 export const commands: { [key: string]: Command } = {
@@ -215,7 +221,7 @@ export const commands: { [key: string]: Command } = {
             },
             reviewchannel: {
                 name: 'Set app. review channel',
-                aliases: ['review', 'reviews', 'setreview', 'logchannel'],
+                aliases: ['review', 'reviews', 'setreview'],
                 description: 'Sets the text channel to post user\'s finished apps for review, or unsets the channel if no argument is given',
                 example: 'app reviewchannel #application-logs',
                 validation: {
@@ -225,6 +231,19 @@ export const commands: { [key: string]: Command } = {
                 },
                 permission: 2,
                 execute: setReviewChannel
+            },
+            archivechannel: {
+                name: 'Set app. archive channel',
+                aliases: ['archive', 'setarchive', 'log', 'logs', 'logchannel'],
+                description: '(OPTIONAL) Sets the archive channel to post user\'s app AFTER its been reviewed',
+                example: 'app archivechannel #application-archive',
+                validation: {
+                    type: Validator.STRING,
+                    max: 1,
+                    message: 'Must provide one text channel'
+                },
+                permission: 2,
+                execute: setArchiveChannel
             },
             new: {
                 name: 'Create New Application',
