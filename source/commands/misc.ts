@@ -1,7 +1,9 @@
 import fetch from 'node-fetch';
 import { Command } from '../models/command';
-import { Message } from 'discord.js';
+import { Message, MessageEmbed } from 'discord.js';
 import { sendError } from '../util/util';
+
+const UNSPLASH_UTM = 'utm_source=norse_bot&utm_medium=referral';
 
 /**
  * Calculates how long it took for a user's message to reach the bot (starting from when the user sent the message)
@@ -21,12 +23,16 @@ export async function getImage(command: Command, args: string[], message: Messag
             const response = await fetch(url);
             const jsonResponse = await response.json();
             if (jsonResponse.urls?.regular) {
-                await message.channel.send(jsonResponse.urls.regular);
+                const unsplashEmbed = new MessageEmbed()
+                    .setDescription(`By [${jsonResponse.user.name}](https://unsplash.com/${jsonResponse.user.username}?${UNSPLASH_UTM}) via [Unsplash](https://unsplash.com/?${UNSPLASH_UTM})`)
+                    .setImage(jsonResponse.urls.regular)
+                    .setColor(jsonResponse.color);
+                await message.channel.send(unsplashEmbed);
             } else {
                 await sendError(message.channel, 'No results found');
             }
         } catch (error) {
-            await sendError(message.channel, 'Error getting requested image (Might have hit image limit)');
+            await sendError(message.channel, 'Error getting requested image (Might have hit API rate limit)');
         }
     } else {
         await sendError(message.channel, 'This command isn\'t setup yet. (Must set UNSPLASH_TOKEN environment variable)');
