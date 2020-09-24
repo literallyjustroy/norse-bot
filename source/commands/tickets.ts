@@ -14,6 +14,7 @@ import { capitalizeFirstLetter } from '../util/util';
 import { getDao } from '../util/database';
 import { logger } from '../util/log';
 import messages from '../util/messages.json';
+import { getSingleMention } from '../util/validator';
 
 const TICKET_CATEGORY_NAME = 'Tickets';
 const TICKET_LOG_NAME = 'ticket-logs';
@@ -192,17 +193,17 @@ export async function addUserToTicket(command: Command, args: string[], message:
 }
 
 export async function setTicketLogChannel(command: Command, args: string[], message: Message): Promise<void> {
-    const channel = message.mentions.channels?.first();
-    if (channel) {
-        if (channel.type === 'text' && message.guild) {
+    if (args[0]) {
+        const channel = getSingleMention(message.mentions, 'textchannel');
+        if (channel) {
             if (channel.parent && channel.parent.type === 'category') {
-                await getDao().setTicketLogId(message.guild, channel.id);
+                await getDao().setTicketLogId(message.guild!, channel.id);
                 await message.channel.send(`<#${channel.id}> set as ticket log channel`);
             } else {
                 await message.channel.send('Ticket logs channel must have a parent category');
             }
         } else {
-            await message.channel.send('Must mention a valid server text channel');
+            await message.channel.send(messages.validation.textChannel);
         }
     } else {
         await getDao().setTicketLogId(message.guild!, undefined);

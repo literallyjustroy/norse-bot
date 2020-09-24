@@ -18,6 +18,8 @@ import {
     sendSuccess,
     textToEmbed
 } from '../util/util';
+import { getSingleMention } from '../util/validator';
+import messages from '../util/messages.json';
 
 const QUESTION_TIMEOUT = 1800000; // 30 minutes
 const QUESTION_LIMIT = 10; // Number of questions allowed per application
@@ -250,10 +252,10 @@ async function generateApplyMessage(guild: Guild, applyChannel: TextChannel | DM
 }
 
 export async function newApplyMessage(command: Command, args: string[], message: Message): Promise<void> {
-    const channel = message.mentions.channels?.first();
-    if (channel) {
-        if (channel.type === 'text' && message.guild) {
-            const applyMessage = await getApplyMessage(message.guild);
+    if (args[0]) {
+        const channel = getSingleMention(message.mentions, 'textchannel');
+        if (channel) {
+            const applyMessage = await getApplyMessage(message.guild!);
             await applyMessage?.delete();
 
             const apps = await getDao().getApplications(message.guild!);
@@ -264,7 +266,7 @@ export async function newApplyMessage(command: Command, args: string[], message:
                 await sendError(message.channel, 'You must have at least one application to generate an apply message');
             }
         } else {
-            await sendError(message.channel, 'Must mention a valid server text channel');
+            await sendError(message.channel, messages.validation.textChannel);
         }
     } else {
         const applyMessage = await getApplyMessage(message.guild!);
@@ -276,13 +278,13 @@ export async function newApplyMessage(command: Command, args: string[], message:
 }
 
 export async function setReviewChannel(command: Command, args: string[], message: Message): Promise<void> {
-    const channel = message.mentions.channels?.first();
-    if (channel) {
-        if (channel.type === 'text' && message.guild) {
-            await getDao().setReviewChannelId(message.guild, channel.id);
+    if (args[0]) {
+        const channel = getSingleMention(message.mentions, 'textchannel');
+        if (channel) {
+            await getDao().setReviewChannelId(message.guild!, channel.id);
             await message.channel.send(textToEmbed(`<#${channel.id}> will now receive completed applications ready for review`));
         } else {
-            await sendError(message.channel, 'Must mention a valid server text channel');
+            await sendError(message.channel, messages.validation.textChannel);
         }
     } else {
         await getDao().setReviewChannelId(message.guild!, undefined);
@@ -291,13 +293,13 @@ export async function setReviewChannel(command: Command, args: string[], message
 }
 
 export async function setArchiveChannel(command: Command, args: string[], message: Message): Promise<void> {
-    const channel = message.mentions.channels?.first();
-    if (channel) {
-        if (channel.type === 'text' && message.guild) {
-            await getDao().setArchiveChannelId(message.guild, channel.id);
+    if (args[0]) {
+        const channel = getSingleMention(message.mentions, 'textchannel');
+        if (channel) {
+            await getDao().setArchiveChannelId(message.guild!, channel.id);
             await message.channel.send(textToEmbed(`<#${channel.id}> will now receive applications after they have been submitted and reviewed`));
         } else {
-            await sendError(message.channel, 'Must mention a valid server text channel');
+            await sendError(message.channel, messages.validation.textChannel);
         }
     } else {
         await getDao().setArchiveChannelId(message.guild!, undefined);

@@ -4,5 +4,9 @@
   "unknownMessage": "Command not recognized",
   "errorMessage": "Uh oh.. An unknown error occurred",
   "deleteError": "Attempt to delete already deleted object",
-  "serverCommandType": "That command is only allowed in servers"
+  "serverCommandType": "That command is only allowed in servers",
+
+  "validation": {
+    "textChannel": "Must mention a valid server text channel"
+  }
 }

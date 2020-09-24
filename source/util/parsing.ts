@@ -51,6 +51,14 @@ export function generateValidationMessage(command?: Command, message?: Message):
     }
 }
 
+/**
+ * Gets the first channel mentioned in the input string
+ *
+ * This is necessary since using first() on a collection doesn't return the first mention, just the first result in
+ * the collection which is sorted by Snowflake, NOT by the order in which it was put there.
+ * @param arg
+ * @param guild
+ */
 export function getChannelFromArg(arg: string, guild: Guild): Channel | undefined  {
     const matches = arg.match(/^<#?(\d+)>$/);
     if (matches) {

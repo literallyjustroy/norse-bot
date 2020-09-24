@@ -2,6 +2,8 @@ import { Activity, GuildMember, Message, MessageEmbed, Presence, TextChannel } f
 import { Command } from '../models/command';
 import { getDao } from '../util/database';
 import { StreamMessage } from '../models/stream-message';
+import { getSingleMention } from '../util/validator';
+import messages from '../util/messages.json';
 
 const streamMessages: StreamMessage[] = [];
 
@@ -17,13 +19,13 @@ function getStreamingUpdate(activities: Activity[]): Activity | undefined {
 }
 
 export async function setStreamChannel(command: Command, args: string[], message: Message): Promise<void> {
-    const channel = message.mentions.channels?.first();
-    if (channel) {
-        if (channel.type === 'text' && message.guild) {
-            await getDao().setStreamChannelId(message.guild, channel.id);
+    if (args[0]) {
+        const channel = getSingleMention(message.mentions, 'textchannel');
+        if (channel) {
+            await getDao().setStreamChannelId(message.guild!, channel.id);
             await message.channel.send(`<#${channel.id}> set as stream notification channel`);
         } else {
-            await message.channel.send('Must mention a valid server text channel');
+            await message.channel.send(messages.validation.textChannel);
         }
     } else {
         await getDao().setStreamChannelId(message.guild!, undefined);
