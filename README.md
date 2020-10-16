@@ -21,7 +21,7 @@ First create an application for your discord members to apply to with `!app new`
 
 ![Application Creation](https://i.imgur.com/1T7kOPx.png)
 
-### Set a channel to review submitted applications in
+#### Set a channel to review submitted applications in
 
 Next set the reviewing channel with `!app reviewchannel #CHANNEL_MENTION_HERE`. This is the channel where submitted applications will reside. You will be able to either accept or decline their role request, and they will be messaged regarding the update.
 
