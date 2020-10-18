@@ -256,7 +256,11 @@ async function generateApplyMessage(guild: Guild, applyChannel: TextChannel | DM
 
     let i = 0;
     apps.forEach(app => {
-        applyEmbed.addField(`${NUMBER_EMOJI[i]} ${app.name}`, app.description);
+        let desc = app.description;
+        if (app.prereqRoleId) {
+            desc = `**Requires:** <@&${app.prereqRoleId}>\n` + desc;
+        }
+        applyEmbed.addField(`${NUMBER_EMOJI[i]} ${app.name}`, desc);
         i += 1;
     });
 
