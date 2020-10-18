@@ -11,7 +11,7 @@ import { Application } from '../models/application';
 import { logger } from '../util/log';
 import {
     addReactions,
-    appTimeOut, Colors,
+    appTimeOut, Colors, getOptionalRole,
     getResponse, optionsString,
     reactionSelect, safeFetch,
     sendError,
@@ -25,10 +25,17 @@ const GUILD_APP_LIMIT = 10; // Number of applications allowed per server
 const NUMBER_EMOJI = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
 
 function getAppHeader(guild: Guild, app: Application): MessageEmbed {
-    return textToEmbed(app.description)
+    let desc = `*${app.description}*`;
+    if (app.prereqRoleId) {
+        desc += `\n**Requires:** @${app.prereqRoleName}`;
+    }
+    if (app.removalRoleId) {
+        desc += `\n**Removes:** @${app.removalRoleName}`;
+    }
+    return textToEmbed('')
         .setTitle(`${guild.name}'s application for **${app.name}** (@${app.roleName})`)
         .setThumbnail(guild.iconURL() || '')
-        .setDescription(`*${app.description}*`);
+        .setDescription(desc);
 }
 
 function getAppPreview(guild: Guild, app: Application): MessageEmbed {
@@ -63,6 +70,9 @@ async function collectOnAppReview(reviewMessage: Message, app: Application): Pro
                         if (appRole) {
                             try {
                                 await guildMember.roles.add(appRole);
+                                if (app.removalRoleId) {
+                                    await guildMember.roles.remove(app.removalRoleId);
+                                }
                             } catch {
                                 await sendError(reviewMessage.channel, `The @${app.roleName} role is higher in the Role hierarchy than this bot's highest role, and so wasn't applied to <@!${app.applicantId}>. However, they were still notified of their acceptance`);
                             }
@@ -97,10 +107,17 @@ async function collectOnAppReview(reviewMessage: Message, app: Application): Pro
 }
 
 async function sendAppForReview(reviewChannel: TextChannel, user: User, app: Application): Promise<void> {
+    let desc = `**${user.tag}**\nMention: <@!${user.id}>\nRole: <@&${app.roleId}>`;
     const appPreview = getAppPreview(reviewChannel.guild, app)
         .setTitle(`${user.username} applied for **${app.name}** (@${app.roleName})`)
-        .setDescription(`**${user.tag}**\nMention:<@!${user.id}>\nRole:<@&${app.roleId}>`)
         .setColor('#ffca36');
+    if (app.prereqRoleId) {
+        desc += `\nRequires: <@&${app.prereqRoleId}>`;
+    }
+    if (app.removalRoleId) {
+        desc += `\nRemoves: <@&${app.removalRoleId}>`;
+    }
+    appPreview.setDescription(desc);
     appPreview.thumbnail = null;
     appPreview.setFooter(optionsString([{ symbol:'✅', label:'Accept' }, { symbol:'❌', label:'Reject' }]));
     const appReviewMessage = await reviewChannel.send(appPreview);
@@ -129,33 +146,38 @@ function collectOnApplyMessage(applyMessage: Message): void {
                 const emojiIndex = NUMBER_EMOJI.indexOf(reaction.emoji.name);
                 const app = (await getDao().getApplications(applyMessage.guild!))[emojiIndex];
 
-                const confirmMessage = await user.send(textToEmbed(`Would you like to start *${applyMessage.guild!.name}'s* **${app.name}** Application`));
-                const confirmReaction = await reactionSelect(confirmMessage, ['✅'], QUESTION_TIMEOUT);
-                if (confirmReaction) {
-                    await user.send(getAppHeader(applyMessage.guild!, app));
+                const guildMember = applyMessage.guild!.members.cache.get(user.id);
+                if (!app.prereqRoleId || (app.prereqRoleId && guildMember && guildMember.roles.cache.get(app.prereqRoleId))) {
+                    const confirmMessage = await user.send(textToEmbed(`Would you like to start *${applyMessage.guild!.name}'s* **${app.name}** Application`));
+                    const confirmReaction = await reactionSelect(confirmMessage, ['✅'], QUESTION_TIMEOUT);
+                    if (confirmReaction) {
+                        await user.send(getAppHeader(applyMessage.guild!, app));
 
-                    app.answers = [];
-                    let i = 1;
-                    for (const question of app.questions) {
-                        await user.send(textToEmbed(`**Question (${i}/${app.questions.length}):** ${question}`));
-                        try {
-                            app.answers.push((await getResponse(user.dmChannel, user, 320, QUESTION_TIMEOUT)).content);
-                        } catch(error) {
-                            return await appTimeOut(user.dmChannel, user);
+                        app.answers = [];
+                        let i = 1;
+                        for (const question of app.questions) {
+                            await user.send(textToEmbed(`**Question (${i}/${app.questions.length}):** ${question}`));
+                            try {
+                                app.answers.push((await getResponse(user.dmChannel, user, 320, QUESTION_TIMEOUT)).content);
+                            } catch(error) {
+                                return await appTimeOut(user.dmChannel, user);
+                            }
+                            i += 1;
                         }
-                        i += 1;
+                        const appPreview = getAppPreview(applyMessage.guild!, app);
+                        appPreview.setFooter(optionsString([{ symbol: '✅', label: 'Confirm' }, { symbol: '⛔', label: 'Cancel' }]));
+                        const previewMessage = await user.send(appPreview);
+                        reactionSelect(previewMessage, ['✅', '⛔'], QUESTION_TIMEOUT).then(async reaction => {
+                            if (reaction?.emoji.name === '✅') {
+                                await sendSuccess(user.dmChannel, `Application for @${app.name} submitted!`);
+                                await sendAppForReview(reviewChannel, user, app);
+                            } else {
+                                await user.send(textToEmbed(`⛔ Application for ${app.name} canceled`).setColor('#bc1932'));
+                            }
+                        });
                     }
-                    const appPreview = getAppPreview(applyMessage.guild!, app);
-                    appPreview.setFooter(optionsString([{ symbol: '✅', label: 'Confirm' }, { symbol: '⛔', label: 'Cancel' }]));
-                    const previewMessage = await user.send(appPreview);
-                    reactionSelect(previewMessage, ['✅', '⛔'], QUESTION_TIMEOUT).then(async reaction => {
-                        if (reaction?.emoji.name === '✅') {
-                            await sendSuccess(user.dmChannel, `Application for @${app.name} submitted!`);
-                            await sendAppForReview(reviewChannel, user, app);
-                        } else {
-                            await user.send(textToEmbed(`⛔ Application for ${app.name} canceled`).setColor('#bc1932'));
-                        }
-                    });
+                } else {
+                    await user.send(textToEmbed(`❌ You do not have the prerequisite role @${app.prereqRoleName} required to apply for ${app.name}.`).setColor(Colors.Failure));
                 }
             } else {
                 await sendSetupError(user, applyMessage.guild!.name);
@@ -373,69 +395,84 @@ export async function createApplication(command: Command, args: string[], messag
         const guildMember = message.guild!.member(message.author)!;
 
         if (role) {
-            if (guildMember.roles.highest.comparePositionTo(role) > 0) {
+            if (guildMember.hasPermission('ADMINISTRATOR') || guildMember.roles.highest.comparePositionTo(role) >= 0) {
                 const botGuildMember = message.guild!.members.cache.get(message.client.user?.id!);
-                if (botGuildMember && botGuildMember.roles.highest.comparePositionTo(role) > 0) {
-                    await message.channel.send(textToEmbed('What is the title of this new application? (Ex: NKU Student)'));
-                    const title = (await getResponse(message.channel, message.author, 70, QUESTION_TIMEOUT)).content;
+                if (botGuildMember && (botGuildMember.hasPermission('ADMINISTRATOR') || botGuildMember.roles.highest.comparePositionTo(role) >= 0)) {
+                    const removalRole = await getOptionalRole('What role should be removed once the application is accepted? (Ex: @Community, or enter "none" if one isn\'t required)', message.channel, message.author, QUESTION_TIMEOUT);
+                    if (!removalRole || (removalRole && guildMember.roles.highest.comparePositionTo(removalRole) >= 0)) {
+                        const prereqRole = await getOptionalRole('What is the prerequisite role required to apply to this application? (Ex: @Norse, or enter "none" if one isn\'t required)', message.channel, message.author, QUESTION_TIMEOUT);
 
-                    await message.channel.send(textToEmbed('What is the description of this new application? (Ex: Apply here if you currently attend Northern Kentucky University)'));
-                    const description = (await getResponse(message.channel, message.author, 500, QUESTION_TIMEOUT)).content;
+                        await message.channel.send(textToEmbed('What is the title of this new application? (Ex: NKU Student)'));
+                        const title = (await getResponse(message.channel, message.author, 70, QUESTION_TIMEOUT)).content;
 
-                    // Questions
+                        await message.channel.send(textToEmbed('What is the description of this new application? (Ex: Apply here if you currently attend Northern Kentucky University)'));
+                        const description = (await getResponse(message.channel, message.author, 500, QUESTION_TIMEOUT)).content;
 
-                    const questions: string[] = [];
-                    let botLastQuestion;
+                        // Questions
 
-                    for (let i = 1; i <= QUESTION_LIMIT && !appFinished; i++) {
-                        const questionEmbed = textToEmbed(`**What is question ${i}?**`);
+                        const questions: string[] = [];
+                        let botLastQuestion;
 
-                        if (i === 1) {
-                            questionEmbed.setDescription(`**What is question ${i}?** (Ex: 'What is your student id number?')`);
-                        } else if (i > 1) {
-                            if (botLastQuestion)
-                                await botLastQuestion.reactions.removeAll();
-                            questionEmbed.setFooter('✅ - Complete application');
-                        } else if (i === QUESTION_LIMIT) {
-                            questionEmbed.setDescription(`**What is question ${i}? (FINAL QUESTION):** `);
+                        for (let i = 1; i <= QUESTION_LIMIT && !appFinished; i++) {
+                            const questionEmbed = textToEmbed(`**What is question ${i}?**`);
+
+                            if (i === 1) {
+                                questionEmbed.setDescription(`**What is question ${i}?** (Ex: 'What is your student id number?')`);
+                            } else if (i > 1) {
+                                if (botLastQuestion)
+                                    await botLastQuestion.reactions.removeAll();
+                                questionEmbed.setFooter('✅ - Complete application');
+                            } else if (i === QUESTION_LIMIT) {
+                                questionEmbed.setDescription(`**What is question ${i}? (FINAL QUESTION):** `);
+                            }
+
+                            botLastQuestion = await message.channel.send(questionEmbed);
+                            if (i > 1) {
+                                questionEmbed.setFooter('✅ - Complete application');
+                                reactionSelect(botLastQuestion, ['✅'], QUESTION_TIMEOUT, message.author).then(async reaction => {
+                                    if (reaction && !appFinished) {
+                                        appFinished = true;
+                                        await finishApplication(message, {
+                                            roleId: role.id,
+                                            roleName: role.name,
+                                            prereqRoleId: prereqRole?.id,
+                                            prereqRoleName: prereqRole?.name,
+                                            removalRoleId: removalRole?.id,
+                                            removalRoleName: removalRole?.name,
+                                            name: title,
+                                            description: description,
+                                            guildId: message.guild!.id,
+                                            lastModifiedById: message.author.id,
+                                            questions: questions
+                                        });
+                                    }
+                                });
+                            }
+
+                            const question = (await getResponse(message.channel, message.author, 200, QUESTION_TIMEOUT)).content;
+                            if (!appFinished) {
+                                questions.push(question);
+                            }
                         }
 
-                        botLastQuestion = await message.channel.send(questionEmbed);
-                        if (i > 1) {
-                            questionEmbed.setFooter('✅ - Complete application');
-                            reactionSelect(botLastQuestion, ['✅'], QUESTION_TIMEOUT, message.author).then(async reaction => {
-                                if (reaction && !appFinished) {
-                                    appFinished = true;
-                                    await finishApplication(message, {
-                                        roleId: role.id,
-                                        roleName: role.name,
-                                        name: title,
-                                        description: description,
-                                        guildId: message.guild!.id,
-                                        lastModifiedById: message.author.id,
-                                        questions: questions
-                                    });
-                                }
+                        if (!appFinished) { // If all questions finished and the for loop ends without reaction
+                            appFinished = true;
+                            await finishApplication(message, {
+                                roleId: role.id,
+                                roleName: role.name,
+                                name: title,
+                                prereqRoleId: prereqRole?.id,
+                                prereqRoleName: prereqRole?.name,
+                                removalRoleId: removalRole?.id,
+                                removalRoleName: removalRole?.name,
+                                description: description,
+                                guildId: message.guild!.id,
+                                lastModifiedById: message.author.id,
+                                questions: questions
                             });
                         }
-
-                        const question = (await getResponse(message.channel, message.author, 200, QUESTION_TIMEOUT)).content;
-                        if (!appFinished) {
-                            questions.push(question);
-                        }
-                    }
-
-                    if (!appFinished) { // If all questions finished and the for loop ends without reaction
-                        appFinished = true;
-                        await finishApplication(message, {
-                            roleId: role.id,
-                            roleName: role.name,
-                            name: title,
-                            description: description,
-                            guildId: message.guild!.id,
-                            lastModifiedById: message.author.id,
-                            questions: questions
-                        });
+                    } else {
+                        await sendError(message.channel, 'Cannot create an application that removes a role higher than your own (Check the role hierarchy in Server Settings)');
                     }
                 } else {
                     await sendError(message.channel, `The @${role.name} role is higher in the Role hierarchy than this bot's highest role. Roles can only be applied if they are lower than the bot's highest role in Server Settings > Roles`);

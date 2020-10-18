@@ -6,7 +6,7 @@ import {
     MessageEmbed,
     MessageManager,
     MessageReaction,
-    NewsChannel,
+    NewsChannel, Role,
     TextChannel,
     User
 } from 'discord.js';
@@ -106,7 +106,7 @@ export async function reactionSelect(message: Message, emojiOptions: string[], t
  * @param characterLimit Lets user know if max character limit is exceeded and will request new submission
  * @param timeout Time in milliseconds
  */
-export async function getResponse(channel: TextChannel | DMChannel | NewsChannel, user: User, characterLimit: number, timeout?: number): Promise<Message> {
+export async function getResponse(channel: TextChannel | DMChannel | NewsChannel, user: User, characterLimit: number | undefined, timeout?: number): Promise<Message> {
     let validAnswer: Message | undefined;
 
     while (!validAnswer) {
@@ -116,11 +116,22 @@ export async function getResponse(channel: TextChannel | DMChannel | NewsChannel
             errors: ['time']
         });
         const messageLength: number | undefined = collected?.first()?.content.length;
-        if (messageLength && messageLength <= characterLimit) {
+        if (messageLength && (characterLimit === undefined || messageLength <= characterLimit)) {
             validAnswer = collected.first();
         } else {
             await sendError(channel, `Your reply exceeds the ${characterLimit} character limit. Please try again.`);
         }
     }
     return validAnswer; // If there isn't a response the collector will error first
+}
+
+export async function getOptionalRole(message: string, channel: TextChannel | DMChannel | NewsChannel, user: User, timeout?: number): Promise<Role | undefined> {
+    await channel.send(textToEmbed(message));
+    const role = (await getResponse(channel, user, undefined, timeout)).mentions.roles.first();
+    if (role) {
+        return role;
+    } else {
+        await channel.send(textToEmbed('No role selected.'));
+    }
+    return undefined;
 }
