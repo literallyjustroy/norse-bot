@@ -12,7 +12,7 @@ import { logger } from '../util/log';
 import {
     addReactions,
     appTimeOut, Colors, getOptionalRole,
-    getResponse, optionsString,
+    getResponse, isNewsChannel, isTextChannel, optionsString,
     reactionSelect, safeFetch,
     sendError,
     sendSuccess,
@@ -278,7 +278,7 @@ async function generateApplyMessage(guild: Guild, applyChannel: TextChannel | DM
 export async function newApplyMessage(command: Command, args: string[], message: Message): Promise<void> {
     const channel = message.mentions.channels?.first();
     if (channel) {
-        if (channel.type === 'text' && message.guild) {
+        if ((isTextChannel(channel) || isNewsChannel(channel)) && message.guild) {
             const applyMessage = await getApplyMessage(message.guild);
             await applyMessage?.delete();
 
@@ -304,7 +304,7 @@ export async function newApplyMessage(command: Command, args: string[], message:
 export async function setReviewChannel(command: Command, args: string[], message: Message): Promise<void> {
     const channel = message.mentions.channels?.first();
     if (channel) {
-        if (channel.type === 'text' && message.guild) {
+        if (isTextChannel(channel) && message.guild) {
             await getDao().setReviewChannelId(message.guild, channel.id);
             await message.channel.send(textToEmbed(`<#${channel.id}> will now receive completed applications ready for review`));
         } else {
@@ -319,7 +319,7 @@ export async function setReviewChannel(command: Command, args: string[], message
 export async function setArchiveChannel(command: Command, args: string[], message: Message): Promise<void> {
     const channel = message.mentions.channels?.first();
     if (channel) {
-        if (channel.type === 'text' && message.guild) {
+        if (isTextChannel(channel) && message.guild) {
             await getDao().setArchiveChannelId(message.guild, channel.id);
             await message.channel.send(textToEmbed(`<#${channel.id}> will now receive applications after they have been submitted and reviewed`));
         } else {

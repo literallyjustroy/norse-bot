@@ -10,7 +10,7 @@ import {
 } from 'discord.js';
 import { executeCommand, argsToString, generateValidationMessage, getCommand, stringToName } from '../util/parsing';
 import { Command } from '../models/command';
-import { capitalizeFirstLetter } from '../util/util';
+import { capitalizeFirstLetter, isTextChannel } from '../util/util';
 import { getDao } from '../util/database';
 import { logger } from '../util/log';
 import messages from '../util/messages.json';
@@ -118,7 +118,7 @@ export async function createTicket(command: Command, args: string[], message: Me
 }
 
 async function isTicketChannel(channel: TextChannel | DMChannel | NewsChannel): Promise<boolean> {
-    if (channel.type !== 'text')
+    if (!isTextChannel(channel))
         return false;
     const ticketLogId = getDao().getTicketLogId(channel.guild);
     return ticketLogId !== undefined &&                                 // The guild HAS a ticket log channel
@@ -194,7 +194,7 @@ export async function addUserToTicket(command: Command, args: string[], message:
 export async function setTicketLogChannel(command: Command, args: string[], message: Message): Promise<void> {
     const channel = message.mentions.channels?.first();
     if (channel) {
-        if (channel.type === 'text' && message.guild) {
+        if (isTextChannel(channel) && message.guild) {
             if (channel.parent && channel.parent.type === 'category') {
                 await getDao().setTicketLogId(message.guild, channel.id);
                 await message.channel.send(`<#${channel.id}> set as ticket log channel`);
