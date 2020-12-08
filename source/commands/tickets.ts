@@ -133,9 +133,14 @@ async function channelToText(channel: TextChannel | DMChannel | NewsChannel): Pr
     const messages = await channel.messages.fetch();
     const messageArray: string[] = [];
     messages.forEach(message => {
+        message.attachments.forEach(attachment => {
+            if (attachment.url) {
+                messageArray.push(attachment.url);
+            }
+        });
         messageArray.push(`[${message.createdAt}] ${message.author.username}: ${message.content}`);
     });
-    return Buffer.from(messageArray.reverse().join('\n'), 'utf-8');
+    return Buffer.from(messageArray.reverse().join('\n'), 'utf-8'); // Reversed so messages read top to bottom
 }
 
 export async function closeTicket(command: Command, args: string[], message: Message): Promise<void> {
