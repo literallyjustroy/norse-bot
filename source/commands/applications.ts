@@ -12,7 +12,7 @@ import { logger } from '../util/log';
 import {
     addReactions,
     appTimeOut, Colors, getOptionalRole,
-    getResponse, isNewsChannel, isTextChannel, optionsString,
+    getResponse, isNewsChannel, isTextChannel, NUMBER_EMOJI, optionsString,
     reactionSelect, safeFetch,
     sendError,
     sendSuccess,
@@ -22,7 +22,6 @@ import {
 const QUESTION_TIMEOUT = 1800000; // 30 minutes
 const QUESTION_LIMIT = 10; // Number of questions allowed per application
 const GUILD_APP_LIMIT = 10; // Number of applications allowed per server
-const NUMBER_EMOJI = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
 
 function getAppHeader(guild: Guild, app: Application): MessageEmbed {
     let desc = `*${app.description}*`;
