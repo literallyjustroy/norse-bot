@@ -27,6 +27,18 @@ export async function safeFetch(manager: ChannelManager | MessageManager, id: st
     }
 }
 
+export function isTextChannel(channel: Channel | undefined): channel is TextChannel {
+    return channel !== undefined && channel.type === 'text';
+}
+
+export function isNewsChannel(channel: Channel | undefined): channel is NewsChannel {
+    return channel !== undefined && channel.type === 'news';
+}
+
+export function isDMChannel(channel: Channel | undefined): channel is DMChannel {
+    return channel !== undefined && channel.type === 'dm';
+}
+
 export async function sleep(ms: number): Promise<any> {
     return new Promise(resolve => setTimeout(resolve, ms));
 }

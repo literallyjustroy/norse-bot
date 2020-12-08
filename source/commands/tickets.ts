@@ -10,7 +10,7 @@ import {
 } from 'discord.js';
 import { executeCommand, argsToString, generateValidationMessage, getCommand, stringToName } from '../util/parsing';
 import { Command } from '../models/command';
-import { capitalizeFirstLetter } from '../util/util';
+import { capitalizeFirstLetter, isTextChannel } from '../util/util';
 import { getDao } from '../util/database';
 import { logger } from '../util/log';
 import messages from '../util/messages.json';
@@ -118,7 +118,7 @@ export async function createTicket(command: Command, args: string[], message: Me
 }
 
 async function isTicketChannel(channel: TextChannel | DMChannel | NewsChannel): Promise<boolean> {
-    if (channel.type !== 'text')
+    if (!isTextChannel(channel))
         return false;
     const ticketLogId = getDao().getTicketLogId(channel.guild);
     return ticketLogId !== undefined &&                                 // The guild HAS a ticket log channel
@@ -133,9 +133,14 @@ async function channelToText(channel: TextChannel | DMChannel | NewsChannel): Pr
     const messages = await channel.messages.fetch();
     const messageArray: string[] = [];
     messages.forEach(message => {
+        message.attachments.forEach(attachment => {
+            if (attachment.url) {
+                messageArray.push(attachment.url);
+            }
+        });
         messageArray.push(`[${message.createdAt}] ${message.author.username}: ${message.content}`);
     });
-    return Buffer.from(messageArray.reverse().join('\n'), 'utf-8');
+    return Buffer.from(messageArray.reverse().join('\n'), 'utf-8'); // Reversed so messages read top to bottom
 }
 
 export async function closeTicket(command: Command, args: string[], message: Message): Promise<void> {
@@ -194,7 +199,7 @@ export async function addUserToTicket(command: Command, args: string[], message:
 export async function setTicketLogChannel(command: Command, args: string[], message: Message): Promise<void> {
     const channel = message.mentions.channels?.first();
     if (channel) {
-        if (channel.type === 'text' && message.guild) {
+        if (isTextChannel(channel) && message.guild) {
             if (channel.parent && channel.parent.type === 'category') {
                 await getDao().setTicketLogId(message.guild, channel.id);
                 await message.channel.send(`<#${channel.id}> set as ticket log channel`);

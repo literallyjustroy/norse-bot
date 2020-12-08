@@ -2,6 +2,7 @@ import { Activity, GuildMember, Message, MessageEmbed, Presence, TextChannel } f
 import { Command } from '../models/command';
 import { getDao } from '../util/database';
 import { StreamMessage } from '../models/stream-message';
+import { isTextChannel } from '../util/util';
 
 const streamMessages: StreamMessage[] = [];
 
@@ -19,7 +20,7 @@ function getStreamingUpdate(activities: Activity[]): Activity | undefined {
 export async function setStreamChannel(command: Command, args: string[], message: Message): Promise<void> {
     const channel = message.mentions.channels?.first();
     if (channel) {
-        if (channel.type === 'text' && message.guild) {
+        if (isTextChannel(channel) && message.guild) {
             await getDao().setStreamChannelId(message.guild, channel.id);
             await message.channel.send(`<#${channel.id}> set as stream notification channel`);
         } else {

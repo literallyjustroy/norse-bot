@@ -4,6 +4,7 @@ import { Channel, Guild, Message } from 'discord.js';
 import { validateArgs } from './validator';
 import messages from './messages.json';
 import { getDao } from './database';
+import { isDMChannel } from './util';
 
 /**
  * Separates a string into a command and its arguments
@@ -103,7 +104,7 @@ export async function executeCommand(command: Command, args: string[], message: 
         } else {
             await message.channel.send(messages.serverCommandType);
         }
-    } else if (message.channel.type === 'dm'){
+    } else if (isDMChannel(message.channel)) {
         await message.channel.send(`${messages.unknownMessage} (Try ${getDao().getPrefix(message.guild)}help)`);
     }
 }
