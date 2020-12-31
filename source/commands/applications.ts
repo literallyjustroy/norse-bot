@@ -241,12 +241,6 @@ async function getApplyMessage(guild: Guild): Promise<Message | undefined> {
     }
 }
 
-/**
- * Generates a new apply Message
- * @param guild
- * @param applyChannel
- * @param apps
- */
 async function generateApplyMessage(guild: Guild, applyChannel: TextChannel | DMChannel | NewsChannel, apps: Application[]): Promise<Message | undefined> {
     await getDao().setApplyChannelId(guild, applyChannel.id);
 
