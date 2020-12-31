@@ -1,6 +1,12 @@
 import { Command } from './models/command';
 import { Validator } from './util/validator';
-import { addUserToTicket, closeTicket, createTicket, setTicketLogChannel } from './commands/tickets';
+import {
+    addUserToTicket,
+    closeTicket,
+    createTicket,
+    removeUserFromTicket,
+    setTicketLogChannel
+} from './commands/tickets';
 import { setAdmin } from './commands/setadmin';
 import { updatePrefix } from './commands/prefix';
 import { add, getImage, ping } from './commands/misc';
@@ -114,7 +120,7 @@ export const commands: { [key: string]: Command } = {
             },
             close: {
                 name: 'Close Ticket',
-                aliases: ['stop', 'cancel', 'remove', 'end', 'finish', 'done'],
+                aliases: ['stop', 'cancel', 'end', 'finish', 'done'],
                 description: 'Closes the ticket this message was sent in',
                 example: 'ticket close jeff said it was an accident :)',
                 execute: closeTicket
@@ -131,6 +137,20 @@ export const commands: { [key: string]: Command } = {
                     message: 'Must provide a single user'
                 },
                 execute: addUserToTicket
+            },
+            remove: {
+                name: 'Remove User From Ticket',
+                aliases: ['removeuser', 'kick'],
+                description: 'Removes the user from the ticket this message was sent in',
+                example: 'ticket remove @Roy [Visual2D]',
+                validation: {
+                    type: Validator.STRING,
+                    min: 1,
+                    max: 1,
+                    message: 'Must provide a single user'
+                },
+                permission: 2,
+                execute: removeUserFromTicket
             },
             log: {
                 name: 'Set Ticket Log Channel',

@@ -8,7 +8,7 @@ import {
     NewsChannel,
     TextChannel
 } from 'discord.js';
-import { executeCommand, argsToString, generateValidationMessage, getCommand, stringToName } from '../util/parsing';
+import { generateValidationMessage, stringToName } from '../util/parsing';
 import { Command } from '../models/command';
 import { capitalizeFirstLetter, isTextChannel } from '../util/util';
 import { getDao } from '../util/database';
@@ -102,6 +102,7 @@ export async function createTicket(command: Command, args: string[], message: Me
             .addFields(
                 { name: 'Closing the ticket', value: `***${getDao().getPrefix(message.guild)}ticket close (optional reason)***` },
                 { name: 'Adding another user', value: `***${getDao().getPrefix(message.guild)}ticket add @(username)***` },
+                { name: 'Remove a user (Admin only)', value: `***${getDao().getPrefix(message.guild)}ticket remove @(username)***` }
             );
 
         await ticketChannel.send(`Ticket opened by <@!${message.author.id}>`, ticketIntroMessage);
@@ -189,7 +190,28 @@ export async function addUserToTicket(command: Command, args: string[], message:
             await channel.updateOverwrite(newPerson, { VIEW_CHANNEL: true });
             await message.channel.send(`Added <@!${newPerson.id}> to the ticket.`);
         } else {
-            await message.channel.send(`Invalid mention. Must @USERNAME. (Ex: ${getDao().getPrefix(message.guild)}ticket add <@!${message.author.id}>)`);
+            await message.channel.send(`Invalid mention. Must @USERNAME (Ex: ${getDao().getPrefix(message.guild)}ticket add <@!${message.author.id}>)`);
+        }
+    } else {
+        await message.channel.send('Can only add users in Ticket channels');
+    }
+}
+
+export async function removeUserFromTicket(command: Command, args: string[], message: Message): Promise<void> {
+    if (await isTicketChannel(message.channel)) {
+        const channel = message.channel as TextChannel;
+
+        const newPerson = message.mentions.members?.first();
+
+        if (newPerson) {
+            if (!newPerson.hasPermission('ADMINISTRATOR')) {
+                await channel.updateOverwrite(newPerson, { VIEW_CHANNEL: false });
+                await message.channel.send(`Removed <@!${newPerson.id}> from the ticket`);
+            } else {
+                await message.channel.send('Cannot remove administrators from tickets');
+            }
+        } else {
+            await message.channel.send(`Invalid mention. Must @USERNAME (Ex: ${getDao().getPrefix(message.guild)}ticket remove <@!${message.author.id}>)`);
         }
     } else {
         await message.channel.send('Can only add users in Ticket channels');
