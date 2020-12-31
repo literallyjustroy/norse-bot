@@ -105,10 +105,13 @@ export async function createTicket(command: Command, args: string[], message: Me
             );
 
         await ticketChannel.send(`Ticket opened by <@!${message.author.id}>`, ticketIntroMessage);
-
         try {
-            await botResponse.delete({ timeout: 15000 });
             await message.delete();
+        }  catch {
+            logger.debug(messages.deleteError);
+        }
+        try {
+            await botResponse.delete({ timeout: 10000 });
         } catch {
             logger.debug(messages.deleteError);
         }
