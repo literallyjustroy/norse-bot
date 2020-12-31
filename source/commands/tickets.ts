@@ -8,9 +8,9 @@ import {
     NewsChannel,
     TextChannel
 } from 'discord.js';
-import { executeCommand, argsToString, generateValidationMessage, getCommand, stringToName } from '../util/parsing';
+import { generateValidationMessage, stringToName } from '../util/parsing';
 import { Command } from '../models/command';
-import { capitalizeFirstLetter, isTextChannel } from '../util/util';
+import { capitalizeFirstLetter, isTextChannel, sendError, sendSuccess } from '../util/util';
 import { getDao } from '../util/database';
 import { logger } from '../util/log';
 import messages from '../util/messages.json';
@@ -92,7 +92,7 @@ export async function createTicket(command: Command, args: string[], message: Me
         await getTicketLogChannel(category, guild);
         const ticketChannel = await createTicketTextChannel(ticketName, category, message, guild);
 
-        const botResponse = await message.channel.send(`Ticket opened: <#${ticketChannel.id}>`);
+        const botResponse = await sendSuccess(message.channel, `Ticket opened: <#${ticketChannel.id}>`);
 
         const ticketIntroMessage = new MessageEmbed()
             .setColor('#ffbf00')
@@ -102,6 +102,7 @@ export async function createTicket(command: Command, args: string[], message: Me
             .addFields(
                 { name: 'Closing the ticket', value: `***${getDao().getPrefix(message.guild)}ticket close (optional reason)***` },
                 { name: 'Adding another user', value: `***${getDao().getPrefix(message.guild)}ticket add @(username)***` },
+                { name: 'Remove a user (Admin only)', value: `***${getDao().getPrefix(message.guild)}ticket remove @(username)***` }
             );
 
         await ticketChannel.send(`Ticket opened by <@!${message.author.id}>`, ticketIntroMessage);
@@ -116,7 +117,7 @@ export async function createTicket(command: Command, args: string[], message: Me
             logger.debug(messages.deleteError);
         }
     } else {
-        await message.channel.send(generateValidationMessage(command));
+        await sendError(message.channel, generateValidationMessage(command));
     }
 }
 
@@ -178,7 +179,7 @@ export async function closeTicket(command: Command, args: string[], message: Mes
             logger.debug(messages.deleteError);
         }
     } else {
-        await message.channel.send('Can only close Ticket channels');
+        await sendError(message.channel, 'Can only close Ticket channels');
     }
 }
 
@@ -190,12 +191,33 @@ export async function addUserToTicket(command: Command, args: string[], message:
 
         if (newPerson) {
             await channel.updateOverwrite(newPerson, { VIEW_CHANNEL: true });
-            await message.channel.send(`Added <@!${newPerson.id}> to the ticket.`);
+            await sendSuccess(message.channel, `Added <@!${newPerson.id}> to the ticket.`);
         } else {
-            await message.channel.send(`Invalid mention. Must @USERNAME. (Ex: ${getDao().getPrefix(message.guild)}ticket add <@!${message.author.id}>)`);
+            await sendError(message.channel, `Invalid mention. Must @USERNAME (Ex: ${getDao().getPrefix(message.guild)}ticket add <@!${message.author.id}>)`);
         }
     } else {
-        await message.channel.send('Can only add users in Ticket channels');
+        await sendError(message.channel, 'Can only add users in Ticket channels');
+    }
+}
+
+export async function removeUserFromTicket(command: Command, args: string[], message: Message): Promise<void> {
+    if (await isTicketChannel(message.channel)) {
+        const channel = message.channel as TextChannel;
+
+        const newPerson = message.mentions.members?.first();
+
+        if (newPerson) {
+            if (!newPerson.hasPermission('ADMINISTRATOR')) {
+                await channel.updateOverwrite(newPerson, { VIEW_CHANNEL: false });
+                await sendSuccess(message.channel, `Removed <@!${newPerson.id}> from the ticket`);
+            } else {
+                await sendError(message.channel, 'Cannot remove administrators from tickets');
+            }
+        } else {
+            await sendError(message.channel, `Invalid mention. Must @USERNAME (Ex: ${getDao().getPrefix(message.guild)}ticket remove <@!${message.author.id}>)`);
+        }
+    } else {
+        await sendError(message.channel, 'Can only add users in Ticket channels');
     }
 }
 
@@ -205,15 +227,15 @@ export async function setTicketLogChannel(command: Command, args: string[], mess
         if (isTextChannel(channel) && message.guild) {
             if (channel.parent && channel.parent.type === 'category') {
                 await getDao().setTicketLogId(message.guild, channel.id);
-                await message.channel.send(`<#${channel.id}> set as ticket log channel`);
+                await sendSuccess(message.channel, `<#${channel.id}> set as ticket log channel`);
             } else {
-                await message.channel.send('Ticket logs channel must have a parent category');
+                await sendError(message.channel, 'Ticket logs channel must have a parent category');
             }
         } else {
-            await message.channel.send('Must mention a valid server text channel');
+            await sendError(message.channel, 'Must mention a valid server text channel');
         }
     } else {
         await getDao().setTicketLogId(message.guild!, undefined);
-        await message.channel.send('NorseBot\'s ticket log channel has been unset');
+        await sendSuccess(message.channel, 'NorseBot\'s ticket log channel has been unset');
     }
 }
