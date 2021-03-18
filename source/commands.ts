@@ -21,6 +21,7 @@ import {
     setReviewChannel
 } from './commands/applications';
 import { subCommandHandler } from './util/parsing';
+import { eightBall } from './commands/eightball';
 
 export const commands: { [key: string]: Command } = {
     add: {
@@ -277,5 +278,12 @@ export const commands: { [key: string]: Command } = {
                 execute: deleteApplication
             }
         }
+    },
+    '8ball': {
+        name: 'Eight Ball',
+        aliases: ['eightball'],
+        description: 'Prints out one of eight 8ball respones',
+        example: '8ball',
+        execute: eightBall
     }
 };
