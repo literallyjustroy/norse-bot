@@ -279,9 +279,9 @@ export const commands: { [key: string]: Command } = {
             }
         }
     },
-    eightBall: {
+    '8ball': {
         name: 'Eight Ball',
-        aliases: ['8ball'],
+        aliases: ['eightball', 'eightBall'],
         description: 'Prints out one of eight 8ball respones',
         example: '8ball',
         execute: eightBall
