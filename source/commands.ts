@@ -22,6 +22,7 @@ import {
 } from './commands/applications';
 import { subCommandHandler } from './util/parsing';
 import { eightBall } from './commands/eightball';
+import { coinFlip } from './commands/coinflip';
 
 export const commands: { [key: string]: Command } = {
     add: {
@@ -285,5 +286,12 @@ export const commands: { [key: string]: Command } = {
         description: 'Prints out one of eight 8ball respones',
         example: '8ball',
         execute: eightBall
+    },
+    coinflip: {
+        name: 'Coin Flip',
+        aliases: ['flip', 'coin'],
+        description: 'Gives a randomized output between heads or tails',
+        example: 'coinflip',
+        execute: coinFlip
     }
 };
