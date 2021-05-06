@@ -66,7 +66,8 @@ You can also host this bot in your own NodeJS Environment. When on Linux, using 
 5. Define the environment variable BOT_TOKEN (containing your Build-A-Bot token)
 6. Define the environment variable DB_LOGIN_URL (Example: DB_LOGIN_URL=mongodb+srv://USER:PASS@norsebot.mongodb.net)
 7. Define the environment variable DB_NAME (name of the database, like dev, prod, etc.)
-8. Run `npm start` in cmd prompt/terminal 
+8. If you would like to use the get random image command, define the envionronment variable UNSPLASH_TOKEN and include an [Unsplash Developer Token](https://unsplash.com/developers).
+9. Run `npm start` in cmd prompt/terminal 
 
 ## Testing / Development
 
